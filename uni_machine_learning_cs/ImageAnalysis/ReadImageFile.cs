@@ -59,4 +59,111 @@ public class ReadImageFile
     }
 
     public Rgb GetPixel(int x, int y) => pixels[x, y];
+
+
+    public int VerticalLineColorSwitches()
+    {
+        return LineColorSwitches(width/2, false);
+    }
+
+    public int HorizontalLineColorSwitches()
+    {
+        return LineColorSwitches(height/2, true);
+    }
+
+    // A new colour has to last this many pixels in a row to count as a switch,
+    // so single anti-aliased edge pixels don't count as an extra colour
+    private const int MinRunLength = 1;
+
+    // Counts how often the traffic sign colour changes along a line.
+    // isHorizontal: walks along row y = coordinate, otherwise along column x = coordinate.
+    private int LineColorSwitches(int coordinate, bool isHorizontal)
+    {
+        int length = isHorizontal ? width : height;
+        Rgb PixelAt(int i) => isHorizontal ? pixels[i, coordinate] : pixels[coordinate, i];
+
+        Colors current = ClosestColor(PixelAt(0));
+        Colors candidate = current;
+        int candidateRun = 0;
+        int switches = 0;
+
+        for (int i = 1; i < length; i++)
+        {
+            Colors color = ClosestColor(PixelAt(i));
+
+            if (color.Equals(current))
+            {
+                candidateRun = 0;
+                continue;
+            }
+
+            if (candidateRun > 0 && color.Equals(candidate))
+            {
+                candidateRun++;
+            }
+            else
+            {
+                candidate = color;
+                candidateRun = 1;
+            }
+
+            if (candidateRun >= MinRunLength)
+            {
+                switches++;
+                current = candidate;
+                candidateRun = 0;
+            }
+        }
+
+        return switches;
+    }
+
+    // Below this saturation (0-1) a pixel counts as white / grey / black instead of a colour
+    private const double MinSaturation = 0.25;
+    // Brightness (0-1) thresholds for the colourless pixels
+    private const double WhiteMinBrightness = 0.75;
+    private const double BlackMaxBrightness = 0.25;
+
+    // Maps a pixel to a traffic sign colour by its hue, so lighter or darker
+    // shades (e.g. a pale blue) still count as that colour
+    private static Colors ClosestColor(Rgb pixel)
+    {
+        int max = Math.Max(pixel.R, Math.Max(pixel.G, pixel.B));
+        int min = Math.Min(pixel.R, Math.Min(pixel.G, pixel.B));
+        double brightness = max / 255.0;
+        double saturation = max == 0 ? 0 : (max - min) / (double)max;
+
+        if (saturation < MinSaturation)
+        {
+            if (brightness >= WhiteMinBrightness) return Colors.White;
+            if (brightness <= BlackMaxBrightness) return Colors.Black;
+            return Colors.Grey;
+        }
+
+        // Hue in degrees: 0 = red, 60 = yellow, 120 = green, 240 = blue
+        double delta = max - min;
+        double hue;
+        if (max == pixel.R) hue = 60 * ((pixel.G - pixel.B) / delta);
+        else if (max == pixel.G) hue = 60 * ((pixel.B - pixel.R) / delta + 2);
+        else hue = 60 * ((pixel.R - pixel.G) / delta + 4);
+        if (hue < 0) hue += 360;
+
+        if (hue < 15 || hue >= 300) return Colors.Red;
+        if (hue < 40) return Colors.Orange;
+        if (hue < 70) return Colors.Yellow;
+        if (hue < 170) return Colors.Green;
+        return Colors.Blue;
+    }
+
+    public bool ColorPresent(Colors color)
+    {
+        foreach (Rgb pixel in pixels)
+        {
+            if (ClosestColor(pixel).Equals(color))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

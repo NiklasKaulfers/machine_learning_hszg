@@ -8,10 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Vectors\Context\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <None Include="80x60+3\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
