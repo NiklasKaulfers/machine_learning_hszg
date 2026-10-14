@@ -4,6 +4,8 @@ using uni_machine_learning_cs.ImageAnalysis;
 string[] files = Directory.GetFiles("80x60+3", "*.bmp");
 Array.Sort(files);
 
+double totalR = 0, totalG = 0, totalB = 0;
+
 foreach (string file in files)
 {
     ReadImageFile fileContent = new ReadImageFile(file);
@@ -19,5 +21,18 @@ foreach (string file in files)
     Console.WriteLine($"White present: " + fileContent.ColorPresent(Colors.White));
     Console.WriteLine($"Yellow present: " + fileContent.ColorPresent(Colors.Yellow));
     Console.WriteLine($"Green present: " + fileContent.ColorPresent(Colors.Green));
+    Console.WriteLine($"Orange present: " + fileContent.ColorPresent(Colors.Orange));
+    Console.WriteLine($"Black present: " + fileContent.ColorPresent(Colors.Black));
+    Console.WriteLine($"Grey present: " + fileContent.ColorPresent(Colors.Grey));
+    // average color
+    var average = fileContent.AverageColor();
+    Console.WriteLine($"Average RGB: R={average.R:F2} G={average.G:F2} B={average.B:F2}");
     Console.WriteLine();
+
+    totalR += average.R;
+    totalG += average.G;
+    totalB += average.B;
 }
+
+Console.WriteLine($"=== Average RGB over all {files.Length} images: " +
+                  $"R={totalR / files.Length:F2} G={totalG / files.Length:F2} B={totalB / files.Length:F2}");

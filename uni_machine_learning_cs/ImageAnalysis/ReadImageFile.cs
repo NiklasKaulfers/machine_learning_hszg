@@ -60,6 +60,21 @@ public class ReadImageFile
 
     public Rgb GetPixel(int x, int y) => pixels[x, y];
 
+    // Average R, G and B over all pixels of the image (each 0-255)
+    public (double R, double G, double B) AverageColor()
+    {
+        long sumR = 0, sumG = 0, sumB = 0;
+        foreach (Rgb pixel in pixels)
+        {
+            sumR += pixel.R;
+            sumG += pixel.G;
+            sumB += pixel.B;
+        }
+
+        double count = width * height;
+        return (sumR / count, sumG / count, sumB / count);
+    }
+
 
     public int VerticalLineColorSwitches()
     {
