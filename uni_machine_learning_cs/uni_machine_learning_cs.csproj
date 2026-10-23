@@ -8,7 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <None Include="80x60+3\**" CopyToOutputDirectory="PreserveNewest" />
+      <PackageReference Include="SkiaSharp" Version="4.153.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="RightTurn\**" CopyToOutputDirectory="PreserveNewest" />
+      <None Include="StopSign\**" CopyToOutputDirectory="PreserveNewest" />
+      <None Include="Vorfahrt von rechts\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
 </Project>

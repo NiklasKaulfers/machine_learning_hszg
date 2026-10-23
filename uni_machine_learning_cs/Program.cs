@@ -1,38 +1,94 @@
-using uni_machine_learning_cs;
-using uni_machine_learning_cs.ImageAnalysis;
+using System.Text.Json;
+using uni_machine_learning_cs.MachineLearning;
 
-string[] files = Directory.GetFiles("80x60+3", "*.bmp");
-Array.Sort(files);
+// Usage:
+//   no arguments        -> extract features of all images, train the network, then ask for images to classify
+//   <image> [<image>..] -> train on the existing image_data.json and classify the given images
 
-double totalR = 0, totalG = 0, totalB = 0;
+// Each folder holds the images of one concept (all subfolders included)
+(string Folder, string Concept)[] conceptFolders =
+[
+    ("RightTurn", "right turn"),
+    ("StopSign", "stop sign"),
+    ("Vorfahrt von rechts", "right of way"),
+    ("Fahrtrichtung links", "left turn"),
+    ("Vorfahrt gewähren", "yield"),
+];
+string[] imageExtensions = [".bmp", ".jpg", ".jpeg"];
 
-foreach (string file in files)
+const string author = "Niklas Kaulfers";
+
+// Write the output into the project root (the folder with the .sln), not into bin/Debug/...
+DirectoryInfo? rootDir = new DirectoryInfo(AppContext.BaseDirectory);
+while (rootDir != null && rootDir.GetFiles("*.sln").Length == 0)
+    rootDir = rootDir.Parent;
+string outputFile = Path.Combine(rootDir?.FullName ?? Directory.GetCurrentDirectory(), "image_data.json");
+
+if (args.Length > 0)
 {
-    ReadImageFile fileContent = new ReadImageFile(file);
+    if (!File.Exists(outputFile))
+        WriteFeatureFile();
 
-    Console.WriteLine($"=== {Path.GetFileName(file)}");
-    Console.WriteLine($"Size: {fileContent.width}x{fileContent.height}");
-    // Color switches
-    Console.WriteLine($"Vertical Color switches: " + fileContent.VerticalLineColorSwitches());
-    Console.WriteLine($"Horizontal Color switches: " + fileContent.HorizontalLineColorSwitches());
-    // presence of colors
-    Console.WriteLine($"Red present: " + fileContent.ColorPresent(Colors.Red));
-    Console.WriteLine($"Blue present: " + fileContent.ColorPresent(Colors.Blue));
-    Console.WriteLine($"White present: " + fileContent.ColorPresent(Colors.White));
-    Console.WriteLine($"Yellow present: " + fileContent.ColorPresent(Colors.Yellow));
-    Console.WriteLine($"Green present: " + fileContent.ColorPresent(Colors.Green));
-    Console.WriteLine($"Orange present: " + fileContent.ColorPresent(Colors.Orange));
-    Console.WriteLine($"Black present: " + fileContent.ColorPresent(Colors.Black));
-    Console.WriteLine($"Grey present: " + fileContent.ColorPresent(Colors.Grey));
-    // average color
-    var average = fileContent.AverageColor();
-    Console.WriteLine($"Average RGB: R={average.R:F2} G={average.G:F2} B={average.B:F2}");
+    TrainedModel model = NetworkTrainer.Run(outputFile, verbose: false);
+    foreach (string image in args)
+        PrintClassification(model, image);
+}
+else
+{
+    WriteFeatureFile();
+
+    // Train the neural network on the vectors that were just written
     Console.WriteLine();
+    TrainedModel model = NetworkTrainer.Run(outputFile);
 
-    totalR += average.R;
-    totalG += average.G;
-    totalB += average.B;
+    while (true)
+    {
+        Console.WriteLine();
+        Console.Write("Image to classify (empty to quit): ");
+        string? image = Console.ReadLine()?.Trim().Trim('"', '\'');
+        if (string.IsNullOrEmpty(image))
+            break;
+        PrintClassification(model, image);
+    }
 }
 
-Console.WriteLine($"=== Average RGB over all {files.Length} images: " +
-                  $"R={totalR / files.Length:F2} G={totalG / files.Length:F2} B={totalB / files.Length:F2}");
+void WriteFeatureFile()
+{
+    var files = conceptFolders
+        .SelectMany(entry => Directory.GetFiles(entry.Folder, "*", SearchOption.AllDirectories)
+            .Where(file => imageExtensions.Contains(Path.GetExtension(file).ToLowerInvariant()))
+            .Order()
+            .Select(file => (File: file, entry.Concept)));
+
+    // Images are read on all CPU cores; AsOrdered keeps the vectors in the same order as the files
+    List<FeatureVector> vectors = files
+        .AsParallel()
+        .AsOrdered()
+        .Select(entry =>
+        {
+            Console.WriteLine($"Reading {entry.File}");
+            return new FeatureVector(entry.Concept, FeatureExtractor.Extract(entry.File));
+        })
+        .ToList();
+
+    FeatureFile featureFile = new FeatureFile(author, FeatureExtractor.Properties, vectors);
+    File.WriteAllText(outputFile,
+        JsonSerializer.Serialize(featureFile, new JsonSerializerOptions { WriteIndented = true }));
+
+    Console.WriteLine($"Wrote {vectors.Count} vectors to {outputFile}");
+}
+
+void PrintClassification(TrainedModel model, string image)
+{
+    try
+    {
+        var (concept, probabilities) = model.ClassifyImage(image);
+        Console.WriteLine($"{image}: {concept}");
+        for (int i = 0; i < model.concepts.Length; i++)
+            Console.WriteLine($"  {model.concepts[i],-12} {probabilities[i]:P1}");
+    }
+    catch (Exception e) when (e is FileNotFoundException or InvalidDataException or NotSupportedException)
+    {
+        Console.WriteLine($"Could not classify {image}: {e.Message}");
+    }
+}

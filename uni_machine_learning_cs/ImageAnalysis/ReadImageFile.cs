@@ -1,3 +1,5 @@
+using SkiaSharp;
+
 namespace uni_machine_learning_cs.ImageAnalysis;
 
 public readonly record struct Rgb(byte R, byte G, byte B);
@@ -22,11 +24,46 @@ public class ReadImageFile
 
         byte[] data = File.ReadAllBytes(fullPath);
 
-        if (data.Length < 54 || data[0] != 'B' || data[1] != 'M')
-            throw new InvalidDataException($"'{fullPath}' is not a BMP file.");
+        // BMPs are read by hand, everything else (JPEG, PNG, ...) is decoded with SkiaSharp
+        bool isBmp = data.Length >= 54 && data[0] == 'B' && data[1] == 'M';
+        pixels = isBmp ? ReadBmp(data) : ReadWithSkia(data, fullPath);
+        width = pixels.GetLength(0);
+        height = pixels.GetLength(1);
+    }
 
+    // Decoded images (e.g. large JPEG photos) are scaled to the same size as the BMPs,
+    // so reading is fast and the features stay comparable
+    private const int ScaledWidth = 80;
+    private const int ScaledHeight = 60;
+
+    private static Rgb[,] ReadWithSkia(byte[] data, string fullPath)
+    {
+        using SKBitmap? original = SKBitmap.Decode(data);
+        if (original == null)
+            throw new InvalidDataException($"'{fullPath}' is not a supported image file.");
+
+        using SKBitmap bitmap = original.Resize(
+            new SKImageInfo(ScaledWidth, ScaledHeight, SKColorType.Rgba8888),
+            new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
+
+        // Pixels are stored row by row, starting at the top-left corner
+        SKColor[] colors = bitmap.Pixels;
+        Rgb[,] result = new Rgb[bitmap.Width, bitmap.Height];
+        for (int y = 0; y < bitmap.Height; y++)
+        {
+            for (int x = 0; x < bitmap.Width; x++)
+            {
+                SKColor color = colors[y * bitmap.Width + x];
+                result[x, y] = new Rgb(color.Red, color.Green, color.Blue);
+            }
+        }
+        return result;
+    }
+
+    private static Rgb[,] ReadBmp(byte[] data)
+    {
         int pixelOffset = BitConverter.ToInt32(data, 10);
-        width = BitConverter.ToInt32(data, 18);
+        int width = BitConverter.ToInt32(data, 18);
         int rawHeight = BitConverter.ToInt32(data, 22);
         short bitsPerPixel = BitConverter.ToInt16(data, 28);
         int compression = BitConverter.ToInt32(data, 30);
@@ -38,13 +75,13 @@ public class ReadImageFile
 
         // Positive height means rows are stored bottom-up, negative means top-down
         bool bottomUp = rawHeight > 0;
-        height = Math.Abs(rawHeight);
+        int height = Math.Abs(rawHeight);
 
         int bytesPerPixel = bitsPerPixel / 8;
         // Each row is padded to a multiple of 4 bytes
         int rowSize = (width * bytesPerPixel + 3) / 4 * 4;
 
-        pixels = new Rgb[width, height];
+        Rgb[,] pixels = new Rgb[width, height];
         for (int y = 0; y < height; y++)
         {
             int fileRow = bottomUp ? height - 1 - y : y;
@@ -56,34 +93,72 @@ public class ReadImageFile
                 pixels[x, y] = new Rgb(data[i + 2], data[i + 1], data[i]);
             }
         }
+        return pixels;
     }
 
     public Rgb GetPixel(int x, int y) => pixels[x, y];
 
     // Average R, G and B over all pixels of the image (each 0-255)
-    public (double R, double G, double B) AverageColor()
+    public (double R, double G, double B) AverageColor() => AverageColor(0, 0, width, height);
+
+    // Splits the image into a columns x rows grid and returns the average R, G and B of each cell,
+    // row by row starting at the top-left cell. For a 3 x 3 grid:
+    //   0 1 2
+    //   3 4 5
+    //   6 7 8
+    public (double R, double G, double B)[] GridAverageColors(int columns, int rows)
+    {
+        var averages = new (double R, double G, double B)[columns * rows];
+        for (int row = 0; row < rows; row++)
+        {
+            for (int column = 0; column < columns; column++)
+            {
+                // If the size can't be divided evenly, the cells differ by at most one pixel
+                int left = column * width / columns;
+                int right = (column + 1) * width / columns;
+                int top = row * height / rows;
+                int bottom = (row + 1) * height / rows;
+                averages[row * columns + column] = AverageColor(left, top, right, bottom);
+            }
+        }
+        return averages;
+    }
+
+    // Average R, G and B of the pixels with left <= x < right and top <= y < bottom
+    private (double R, double G, double B) AverageColor(int left, int top, int right, int bottom)
     {
         long sumR = 0, sumG = 0, sumB = 0;
-        foreach (Rgb pixel in pixels)
+        for (int y = top; y < bottom; y++)
         {
-            sumR += pixel.R;
-            sumG += pixel.G;
-            sumB += pixel.B;
+            for (int x = left; x < right; x++)
+            {
+                Rgb pixel = pixels[x, y];
+                sumR += pixel.R;
+                sumG += pixel.G;
+                sumB += pixel.B;
+            }
         }
 
-        double count = width * height;
+        double count = Math.Max(1, (right - left) * (bottom - top));
         return (sumR / count, sumG / count, sumB / count);
     }
 
 
-    public int VerticalLineColorSwitches()
+    // Colour switches along `count` evenly spaced vertical lines (columns), from left to right.
+    // The lines sit in the middle of equally wide strips, so none of them runs along the image border
+    public int[] VerticalLinesColorSwitches(int count)
     {
-        return LineColorSwitches(width/2, false);
+        return Enumerable.Range(0, count)
+            .Select(line => LineColorSwitches((2 * line + 1) * width / (2 * count), false))
+            .ToArray();
     }
 
-    public int HorizontalLineColorSwitches()
+    // Colour switches along `count` evenly spaced horizontal lines (rows), from top to bottom
+    public int[] HorizontalLinesColorSwitches(int count)
     {
-        return LineColorSwitches(height/2, true);
+        return Enumerable.Range(0, count)
+            .Select(line => LineColorSwitches((2 * line + 1) * height / (2 * count), true))
+            .ToArray();
     }
 
     // A new colour has to last this many pixels in a row to count as a switch,
