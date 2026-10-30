@@ -35,6 +35,50 @@ public class DecisionTree : IClassifier
         root = Build(Enumerable.Range(0, training.Count).ToArray(), 0);
     }
 
+    // Used when loading a saved tree, which only needs its nodes
+    private DecisionTree(BinaryReader reader)
+    {
+        training = [];
+        root = ReadNode(reader, 0);
+    }
+
+    // The nodes top-down, each inner node followed by its left and then its right subtree
+    public void Write(BinaryWriter writer) => WriteNode(writer, root);
+
+    public static DecisionTree Read(BinaryReader reader) => new DecisionTree(reader);
+
+    private static void WriteNode(BinaryWriter writer, Node node)
+    {
+        bool isLeaf = node.Probabilities != null;
+        writer.Write(isLeaf);
+        if (isLeaf)
+        {
+            writer.WriteArray(node.Probabilities!);
+            return;
+        }
+        writer.Write(node.Feature);
+        writer.Write(node.Threshold);
+        WriteNode(writer, node.Left!);
+        WriteNode(writer, node.Right!);
+    }
+
+    private Node ReadNode(BinaryReader reader, int depth)
+    {
+        Depth = Math.Max(Depth, depth);
+        if (reader.ReadBoolean())
+        {
+            LeafCount++;
+            return new Node { Probabilities = reader.ReadDoubleArray() };
+        }
+        return new Node
+        {
+            Feature = reader.ReadInt32(),
+            Threshold = reader.ReadDouble(),
+            Left = ReadNode(reader, depth + 1),
+            Right = ReadNode(reader, depth + 1),
+        };
+    }
+
     public double[] Predict(double[] input)
     {
         Node node = root;

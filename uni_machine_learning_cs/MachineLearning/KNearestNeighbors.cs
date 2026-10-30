@@ -18,6 +18,30 @@ public class KNearestNeighbors : IClassifier
         this.k = k;
     }
 
+    // k-NN has no learned values, so the training vectors themselves are stored
+    public void Write(BinaryWriter writer)
+    {
+        writer.Write(k);
+        writer.Write(classCount);
+        writer.Write(training.Count);
+        foreach (var (input, sampleClass) in training)
+        {
+            writer.WriteArray(input);
+            writer.Write(sampleClass);
+        }
+    }
+
+    public static KNearestNeighbors Read(BinaryReader reader)
+    {
+        int k = reader.ReadInt32();
+        int classCount = reader.ReadInt32();
+        int count = reader.ReadInt32();
+        List<(double[] Input, int Class)> training = new List<(double[] Input, int Class)>(count);
+        for (int i = 0; i < count; i++)
+            training.Add((reader.ReadDoubleArray(), reader.ReadInt32()));
+        return new KNearestNeighbors(training, classCount, k);
+    }
+
     // Share of the k nearest neighbors that belong to each class
     public double[] Predict(double[] input) => Votes(NearestClasses(input));
 

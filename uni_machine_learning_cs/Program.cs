@@ -2,10 +2,12 @@ using System.Text.Json;
 using uni_machine_learning_cs.MachineLearning;
 
 // Usage:
-//   [--nn | --knn | --tree]                      -> extract features of all images, train, then ask for images to classify
-//   [--nn | --knn | --tree] <image> [<image>..]  -> train on the existing image_data.json and classify the given images
-// --nn uses the neural network, --knn k-nearest neighbors, --tree a decision tree. Without any, the method is asked for
-// (with images given, the neural network is used)
+//   --train <method> [<image>..]  -> extract features of all images, train the method, save the model,
+//                                    then classify the given images (or ask for images to classify)
+//   <method> [<image>..]          -> load the saved model of the method and classify with it
+//                                    (if there is no saved model yet, it is trained first)
+// <method> is --nn (neural network), --knn (k-nearest neighbors) or --tree (decision tree).
+// Without a method, it is asked for. The models are saved in the models folder of the project root
 
 // Each folder holds the images of one concept (all subfolders included)
 (string Folder, string Concept)[] conceptFolders =
@@ -24,32 +26,59 @@ const string author = "Niklas Kaulfers";
 DirectoryInfo? rootDir = new DirectoryInfo(AppContext.BaseDirectory);
 while (rootDir != null && rootDir.GetFiles("*.sln").Length == 0)
     rootDir = rootDir.Parent;
-string outputFile = Path.Combine(rootDir?.FullName ?? Directory.GetCurrentDirectory(), "image_data.json");
+string projectRoot = rootDir?.FullName ?? Directory.GetCurrentDirectory();
+string outputFile = Path.Combine(projectRoot, "image_data.json");
+string modelFolder = Path.Combine(projectRoot, "models");
 
-LearningMethod? chosenMethod = args.Contains("--tree") ? LearningMethod.DecisionTree
+string[] options = ["--train", "--nn", "--knn", "--tree"];
+string? unknownOption = args.FirstOrDefault(arg => arg.StartsWith("--") && !options.Contains(arg));
+if (unknownOption != null)
+{
+    Console.WriteLine($"Unknown option {unknownOption}. Use --train and/or one of --nn, --knn, --tree.");
+    return 1;
+}
+
+bool train = args.Contains("--train");
+LearningMethod method = args.Contains("--tree") ? LearningMethod.DecisionTree
     : args.Contains("--knn") ? LearningMethod.KNearestNeighbors
     : args.Contains("--nn") ? LearningMethod.NeuralNetwork
-    : null;
-string[] images = args.Where(arg => arg is not ("--nn" or "--knn" or "--tree")).ToArray();
+    : AskLearningMethod();
+string[] images = args.Where(arg => !options.Contains(arg)).ToArray();
+string modelFile = Path.Combine(modelFolder, method switch
+{
+    LearningMethod.NeuralNetwork => "neural_network.model",
+    LearningMethod.KNearestNeighbors => "k_nearest_neighbors.model",
+    _ => "decision_tree.model",
+});
+
+TrainedModel? model = null;
+if (!train)
+{
+    if (File.Exists(modelFile))
+        model = LoadModel();
+    else
+        Console.WriteLine($"No saved {method} model found in {modelFolder}, training one now.");
+}
+
+if (model == null)
+{
+    WriteFeatureFile();
+
+    // Train on the vectors that were just written and keep the result for the next runs
+    Console.WriteLine();
+    model = ModelTrainer.Run(outputFile, method);
+    Directory.CreateDirectory(modelFolder);
+    model.Save(modelFile);
+    Console.WriteLine($"Saved the model to {modelFile}");
+}
 
 if (images.Length > 0)
 {
-    if (!File.Exists(outputFile))
-        WriteFeatureFile();
-
-    TrainedModel model = ModelTrainer.Run(outputFile, chosenMethod ?? LearningMethod.NeuralNetwork, verbose: false);
     foreach (string image in images)
         PrintClassification(model, image);
 }
 else
 {
-    LearningMethod method = chosenMethod ?? AskLearningMethod();
-    WriteFeatureFile();
-
-    // Train on the vectors that were just written
-    Console.WriteLine();
-    TrainedModel model = ModelTrainer.Run(outputFile, method);
-
     while (true)
     {
         Console.WriteLine();
@@ -58,6 +87,25 @@ else
         if (string.IsNullOrEmpty(image))
             break;
         PrintClassification(model, image);
+    }
+}
+
+return 0;
+
+// A saved model that can't be read (e.g. the features changed since it was trained) is trained again
+TrainedModel? LoadModel()
+{
+    try
+    {
+        TrainedModel loaded = TrainedModel.Load(modelFile);
+        Console.WriteLine($"Loaded the {loaded.method} model from {modelFile}");
+        Console.WriteLine($"Trained {loaded.trainedAt:yyyy-MM-dd HH:mm}, test accuracy {loaded.testAccuracy:P1}");
+        return loaded;
+    }
+    catch (InvalidDataException e)
+    {
+        Console.WriteLine($"Could not load the saved model: {e.Message} Training it again.");
+        return null;
     }
 }
 

@@ -3,3 +3,10 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+# images
+**/*.jpg
+**/*.bmp
+**/*.jpeg
+# trained models (rebuild with --train)
+models/

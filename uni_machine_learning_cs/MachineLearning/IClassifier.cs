@@ -12,4 +12,7 @@ public interface IClassifier
         double[] output = Predict(input);
         return Array.IndexOf(output, output.Max());
     }
+
+    // Stores everything the classifier learned, so it can be loaded again without training
+    void Write(BinaryWriter writer);
 }

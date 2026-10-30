@@ -36,6 +36,42 @@ public class NeuralNetwork : IClassifier
         }
     }
 
+    // Used when loading a saved network
+    private NeuralNetwork(int[] layerSizes, double[][,] weights, double[][] biases)
+    {
+        this.layerSizes = layerSizes;
+        this.weights = weights;
+        this.biases = biases;
+    }
+
+    // Layer sizes, then the weights and biases of every layer
+    public void Write(BinaryWriter writer)
+    {
+        writer.WriteArray(layerSizes);
+        for (int l = 0; l < weights.Length; l++)
+        {
+            foreach (double weight in weights[l])
+                writer.Write(weight);
+            writer.WriteArray(biases[l]);
+        }
+    }
+
+    public static NeuralNetwork Read(BinaryReader reader)
+    {
+        int[] layerSizes = reader.ReadIntArray();
+        double[][,] weights = new double[layerSizes.Length - 1][,];
+        double[][] biases = new double[layerSizes.Length - 1][];
+        for (int l = 0; l < weights.Length; l++)
+        {
+            weights[l] = new double[layerSizes[l + 1], layerSizes[l]];
+            for (int j = 0; j < layerSizes[l + 1]; j++)
+                for (int i = 0; i < layerSizes[l]; i++)
+                    weights[l][j, i] = reader.ReadDouble();
+            biases[l] = reader.ReadDoubleArray();
+        }
+        return new NeuralNetwork(layerSizes, weights, biases);
+    }
+
     // Returns the activations of every layer, the last one being the output probabilities
     private double[][] Forward(double[] input)
     {

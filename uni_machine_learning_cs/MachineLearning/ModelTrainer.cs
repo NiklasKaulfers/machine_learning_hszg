@@ -28,8 +28,8 @@ public static class ModelTrainer
     private const int MaxDepth = 20;
     private const int MinSamplesSplit = 5;
 
-    // verbose: print the training progress, test accuracy and confusion matrix
-    public static TrainedModel Run(string jsonPath, LearningMethod method, bool verbose = true)
+    // Prints the training progress, test accuracy and confusion matrix
+    public static TrainedModel Run(string jsonPath, LearningMethod method)
     {
         FeatureFile featureFile = JsonSerializer.Deserialize<FeatureFile>(File.ReadAllText(jsonPath))
                                   ?? throw new InvalidDataException($"'{jsonPath}' contains no feature data.");
@@ -58,28 +58,25 @@ public static class ModelTrainer
         training = training.Select(s => (TrainedModel.Normalize(s.Input, min, max), s.Class)).ToList();
         test = test.Select(s => (TrainedModel.Normalize(s.Input, min, max), s.Class)).ToList();
 
-        if (verbose)
-        {
-            Console.WriteLine($"Learning method: {method}");
-            Console.WriteLine($"Concepts: {string.Join(", ", concepts)}");
-        }
+        Console.WriteLine($"Learning method: {method}");
+        Console.WriteLine($"Concepts: {string.Join(", ", concepts)}");
 
         IClassifier classifier = method switch
         {
-            LearningMethod.NeuralNetwork => TrainNeuralNetwork(training, test, featureCount, concepts.Length, random, verbose),
-            LearningMethod.KNearestNeighbors => CreateKNearestNeighbors(training, test, concepts.Length, verbose),
-            LearningMethod.DecisionTree => TrainDecisionTree(training, test, concepts.Length, verbose),
+            LearningMethod.NeuralNetwork => TrainNeuralNetwork(training, test, featureCount, concepts.Length, random),
+            LearningMethod.KNearestNeighbors => CreateKNearestNeighbors(training, test, concepts.Length),
+            LearningMethod.DecisionTree => TrainDecisionTree(training, test, concepts.Length),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null),
         };
 
-        if (verbose)
-            PrintEvaluation(classifier, concepts, test);
+        double testAccuracy = Accuracy(classifier, test);
+        PrintEvaluation(classifier, concepts, test, testAccuracy);
 
-        return new TrainedModel(classifier, concepts, min, max);
+        return new TrainedModel(classifier, method, concepts, min, max, DateTime.Now, testAccuracy);
     }
 
     private static NeuralNetwork TrainNeuralNetwork(List<(double[] Input, int Class)> training,
-        List<(double[] Input, int Class)> test, int featureCount, int classCount, Random random, bool verbose)
+        List<(double[] Input, int Class)> test, int featureCount, int classCount, Random random)
     {
         // Some concepts have far fewer images (e.g. 289 right turns vs 5780 left turns). Without balancing,
         // the network learns to never predict them, so smaller concepts are repeated up to the largest one
@@ -93,11 +90,8 @@ public static class ModelTrainer
 
         NeuralNetwork network = new NeuralNetwork([featureCount, HiddenNeurons, classCount], Seed);
 
-        if (verbose)
-        {
-            Console.WriteLine($"Training on {training.Count} vectors, testing on {test.Count}");
-            Console.WriteLine($"Layers: {featureCount} inputs -> {HiddenNeurons} hidden -> {classCount} outputs");
-        }
+        Console.WriteLine($"Training on {training.Count} vectors, testing on {test.Count}");
+        Console.WriteLine($"Layers: {featureCount} inputs -> {HiddenNeurons} hidden -> {classCount} outputs");
 
         for (int epoch = 1; epoch <= Epochs; epoch++)
         {
@@ -105,7 +99,7 @@ public static class ModelTrainer
             foreach (var (input, expected) in training.OrderBy(_ => random.Next()))
                 loss += network.Train(input, expected, LearningRate);
 
-            if (verbose && (epoch == 1 || epoch % 20 == 0))
+            if (epoch == 1 || epoch % 20 == 0)
                 Console.WriteLine($"Epoch {epoch,3}: loss {loss / training.Count:F4}, " +
                                   $"training accuracy {Accuracy(network, training):P1}");
         }
@@ -116,33 +110,31 @@ public static class ModelTrainer
     // k-NN has no training phase, the (normalized) training vectors are the model. They are not balanced
     // like for the network: copies of a vector would only fill several of the k places with the same neighbor
     private static KNearestNeighbors CreateKNearestNeighbors(List<(double[] Input, int Class)> training,
-        List<(double[] Input, int Class)> test, int classCount, bool verbose)
+        List<(double[] Input, int Class)> test, int classCount)
     {
-        if (verbose)
-            Console.WriteLine($"Storing {training.Count} vectors, testing on {test.Count}, k = {Neighbors}");
+        Console.WriteLine($"Storing {training.Count} vectors, testing on {test.Count}, k = {Neighbors}");
 
         return new KNearestNeighbors(training, classCount, Neighbors);
     }
 
     private static DecisionTree TrainDecisionTree(List<(double[] Input, int Class)> training,
-        List<(double[] Input, int Class)> test, int classCount, bool verbose)
+        List<(double[] Input, int Class)> test, int classCount)
     {
-        if (verbose)
-            Console.WriteLine($"Training on {training.Count} vectors, testing on {test.Count}, " +
+        Console.WriteLine($"Training on {training.Count} vectors, testing on {test.Count}, " +
                               $"max depth {MaxDepth}, min {MinSamplesSplit} vectors per split");
 
         DecisionTree tree = new DecisionTree(training, classCount, MaxDepth, MinSamplesSplit);
 
-        if (verbose)
-            Console.WriteLine($"Tree: depth {tree.Depth}, {tree.LeafCount} leaves, " +
+        Console.WriteLine($"Tree: depth {tree.Depth}, {tree.LeafCount} leaves, " +
                               $"training accuracy {Accuracy(tree, training):P1}");
 
         return tree;
     }
 
-    private static void PrintEvaluation(IClassifier classifier, string[] concepts, List<(double[] Input, int Class)> test)
+    private static void PrintEvaluation(IClassifier classifier, string[] concepts, List<(double[] Input, int Class)> test,
+        double testAccuracy)
     {
-        Console.WriteLine($"Test accuracy: {Accuracy(classifier, test):P1}");
+        Console.WriteLine($"Test accuracy: {testAccuracy:P1}");
 
         // Confusion matrix: rows = actual concept, columns = predicted concept
         int[,] confusion = new int[concepts.Length, concepts.Length];
