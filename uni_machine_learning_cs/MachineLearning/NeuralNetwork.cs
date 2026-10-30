@@ -3,7 +3,7 @@ namespace uni_machine_learning_cs.MachineLearning;
 // Fully connected feed-forward network (multi-layer perceptron).
 // Hidden layers use the sigmoid activation, the output layer uses softmax,
 // trained with backpropagation and stochastic gradient descent on the cross-entropy loss.
-public class NeuralNetwork
+public class NeuralNetwork : IClassifier
 {
     private readonly int[] layerSizes;
     // weights[l][j, i]: weight from neuron i in layer l to neuron j in layer l + 1

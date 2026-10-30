@@ -2,8 +2,10 @@ using System.Text.Json;
 using uni_machine_learning_cs.MachineLearning;
 
 // Usage:
-//   no arguments        -> extract features of all images, train the network, then ask for images to classify
-//   <image> [<image>..] -> train on the existing image_data.json and classify the given images
+//   [--nn | --knn | --tree]                      -> extract features of all images, train, then ask for images to classify
+//   [--nn | --knn | --tree] <image> [<image>..]  -> train on the existing image_data.json and classify the given images
+// --nn uses the neural network, --knn k-nearest neighbors, --tree a decision tree. Without any, the method is asked for
+// (with images given, the neural network is used)
 
 // Each folder holds the images of one concept (all subfolders included)
 (string Folder, string Concept)[] conceptFolders =
@@ -24,22 +26,29 @@ while (rootDir != null && rootDir.GetFiles("*.sln").Length == 0)
     rootDir = rootDir.Parent;
 string outputFile = Path.Combine(rootDir?.FullName ?? Directory.GetCurrentDirectory(), "image_data.json");
 
-if (args.Length > 0)
+LearningMethod? chosenMethod = args.Contains("--tree") ? LearningMethod.DecisionTree
+    : args.Contains("--knn") ? LearningMethod.KNearestNeighbors
+    : args.Contains("--nn") ? LearningMethod.NeuralNetwork
+    : null;
+string[] images = args.Where(arg => arg is not ("--nn" or "--knn" or "--tree")).ToArray();
+
+if (images.Length > 0)
 {
     if (!File.Exists(outputFile))
         WriteFeatureFile();
 
-    TrainedModel model = NetworkTrainer.Run(outputFile, verbose: false);
-    foreach (string image in args)
+    TrainedModel model = ModelTrainer.Run(outputFile, chosenMethod ?? LearningMethod.NeuralNetwork, verbose: false);
+    foreach (string image in images)
         PrintClassification(model, image);
 }
 else
 {
+    LearningMethod method = chosenMethod ?? AskLearningMethod();
     WriteFeatureFile();
 
-    // Train the neural network on the vectors that were just written
+    // Train on the vectors that were just written
     Console.WriteLine();
-    TrainedModel model = NetworkTrainer.Run(outputFile);
+    TrainedModel model = ModelTrainer.Run(outputFile, method);
 
     while (true)
     {
@@ -49,6 +58,30 @@ else
         if (string.IsNullOrEmpty(image))
             break;
         PrintClassification(model, image);
+    }
+}
+
+LearningMethod AskLearningMethod()
+{
+    while (true)
+    {
+        Console.WriteLine("Learning method:");
+        Console.WriteLine("  1) neural network");
+        Console.WriteLine("  2) k-nearest neighbors");
+        Console.WriteLine("  3) decision tree");
+        Console.Write("Choice [1]: ");
+        switch (Console.ReadLine()?.Trim().ToLowerInvariant())
+        {
+            case null or "" or "1" or "nn":
+                return LearningMethod.NeuralNetwork;
+            case "2" or "knn":
+                return LearningMethod.KNearestNeighbors;
+            case "3" or "tree":
+                return LearningMethod.DecisionTree;
+            default:
+                Console.WriteLine("Please enter 1, 2 or 3.");
+                break;
+        }
     }
 }
 
