@@ -36,6 +36,17 @@ public class NeuralNetwork : IClassifier
         }
     }
 
+    // Number of neurons per layer, the first one being the inputs
+    public IReadOnlyList<int> LayerSizes => layerSizes;
+
+    // Weight from neuron `from` in layer `layer` to neuron `to` in layer `layer` + 1
+    public double GetWeight(int layer, int to, int from) => weights[layer][to, from];
+    public void SetWeight(int layer, int to, int from, double value) => weights[layer][to, from] = value;
+
+    // Bias of neuron `to` in layer `layer` + 1
+    public double GetBias(int layer, int to) => biases[layer][to];
+    public void SetBias(int layer, int to, double value) => biases[layer][to] = value;
+
     // Used when loading a saved network
     private NeuralNetwork(int[] layerSizes, double[][,] weights, double[][] biases)
     {

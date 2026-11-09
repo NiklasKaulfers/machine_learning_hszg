@@ -1,26 +1,37 @@
 namespace uni_machine_learning_cs.MachineLearning;
 
 // A trained classifier together with what it needs to classify new images:
-// the concept names and the min / max used to scale the features.
+// the concept names, the min / max used to scale the features and, for yes/no features, the thresholds.
 // Can be saved to a file and loaded again, so training only has to happen once
 public class TrainedModel
 {
     // Marks the file as a model file. The version changes whenever the layout changes,
     // so old files are rejected instead of misread
     private const string FileMagic = "uni_machine_learning_cs model";
-    private const int FileVersion = 1;
+    private const int FileVersion = 2;
 
     private readonly IClassifier classifier;
     private readonly double[] min;
     private readonly double[] max;
+    // With yes/no features: a scaled feature above its threshold is 1 (yes), otherwise 0 (no). Null = off
+    private readonly double[]? thresholds;
     public readonly LearningMethod method;
     public readonly string[] concepts;
     public readonly DateTime trainedAt;
     public readonly double testAccuracy;
 
+    // The network, if this model is one (for reading and changing its weights)
+    public NeuralNetwork? Network => classifier as NeuralNetwork;
+
+    // The logic gate network, if this model is one (for writing out its circuit)
+    public LogicGateNetwork? Gates => classifier as LogicGateNetwork;
+
+    public bool BinaryFeatures => thresholds != null;
+
     public TrainedModel(IClassifier classifier, LearningMethod method, string[] concepts, double[] min, double[] max,
-        DateTime trainedAt, double testAccuracy)
+        double[]? thresholds, DateTime trainedAt, double testAccuracy)
     {
+        this.thresholds = thresholds;
         this.classifier = classifier;
         this.method = method;
         this.concepts = concepts;
@@ -30,8 +41,16 @@ public class TrainedModel
         this.testAccuracy = testAccuracy;
     }
 
-    // Scales every feature to 0-1 with the min / max of the training data
-    public double[] Normalize(double[] input) => Normalize(input, min, max);
+    // Scales every feature to 0-1 with the min / max of the training data, then turns it into yes/no if enabled
+    public double[] Prepare(double[] input)
+    {
+        double[] normalized = Normalize(input, min, max);
+        return thresholds == null ? normalized : Binarize(normalized, thresholds);
+    }
+
+    public static double[] Binarize(double[] input, double[] thresholds) => input
+        .Select((value, f) => value > thresholds[f] ? 1.0 : 0.0)
+        .ToArray();
 
     public static double[] Normalize(double[] input, double[] min, double[] max) => input
         .Select((value, f) => max[f] > min[f] ? (value - min[f]) / (max[f] - min[f]) : 0)
@@ -40,7 +59,7 @@ public class TrainedModel
     // Classifies one image: the detected concept plus the probability of every concept
     public (string Concept, double[] Probabilities) ClassifyImage(string imagePath)
     {
-        double[] input = Normalize(FeatureExtractor.ToNumbers(FeatureExtractor.Extract(imagePath)));
+        double[] input = Prepare(FeatureExtractor.ToNumbers(FeatureExtractor.Extract(imagePath)));
         double[] probabilities = classifier.Predict(input);
         int best = classifier.Classify(input);
         return (concepts[best], probabilities);
@@ -58,6 +77,9 @@ public class TrainedModel
         writer.WriteArray(concepts);
         writer.WriteArray(min);
         writer.WriteArray(max);
+        writer.Write(thresholds != null);
+        if (thresholds != null)
+            writer.WriteArray(thresholds);
         classifier.Write(writer);
     }
 
@@ -81,15 +103,17 @@ public class TrainedModel
             string[] concepts = reader.ReadStringArray();
             double[] min = reader.ReadDoubleArray();
             double[] max = reader.ReadDoubleArray();
+            double[]? thresholds = reader.ReadBoolean() ? reader.ReadDoubleArray() : null;
             IClassifier classifier = method switch
             {
                 LearningMethod.NeuralNetwork => NeuralNetwork.Read(reader),
                 LearningMethod.KNearestNeighbors => KNearestNeighbors.Read(reader),
                 LearningMethod.DecisionTree => DecisionTree.Read(reader),
+                LearningMethod.LogicGateNetwork => LogicGateNetwork.Read(reader),
                 _ => throw new InvalidDataException($"'{path}' contains an unknown learning method."),
             };
 
-            return new TrainedModel(classifier, method, concepts, min, max, trainedAt, testAccuracy);
+            return new TrainedModel(classifier, method, concepts, min, max, thresholds, trainedAt, testAccuracy);
         }
         catch (EndOfStreamException)
         {
