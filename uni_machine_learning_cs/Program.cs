@@ -8,6 +8,9 @@ using uni_machine_learning_cs.MachineLearning;
 //                                    (if there is no saved model yet, it is trained first)
 //   --runs <n> <method>           -> train and test the method n times with different random training / test
 //                                    splits, print every run's test accuracy and save them to evaluations/
+//   --runs <n> <method> --weights -> don't train: test the saved model (with the weights from its _weights.json
+//                                    applied, see below) on the test data of the same n splits. Shows how good
+//                                    weights edited by hand are, run by run comparable with --runs without it
 //   --sweep <n> <method> [--values 1,2,3]
 //                                 -> like --runs, but repeated for several complexity values: the number of
 //                                    hidden layers (--nn), k (--knn) or the max depth (--tree). Saves the
@@ -24,8 +27,8 @@ using uni_machine_learning_cs.MachineLearning;
 // average in the training images, otherwise 0. Saved as its own model, e.g. neural_network_binary.model.
 // Training the gate network also writes models/<model name>_circuit.txt with every gate of the finished circuit
 // (with --binary it is a pure logic circuit, otherwise the gates work on the 0-1 values like probabilities)
-// Training the neural network also writes models/<model name>_weights.json with the weights of every neuron.
-// Changes made in that file are used on every following run, until the network is trained again
+// Training the neural network or the perceptron also writes models/<model name>_weights.json with the weights
+// of every neuron. Changes made in that file are used on every following run, until the model is trained again
 
 // Each folder holds the images of one concept (all subfolders included)
 (string Folder, string Concept)[] conceptFolders =
@@ -49,7 +52,7 @@ string outputFile = Path.Combine(projectRoot, "image_data.json");
 string modelFolder = Path.Combine(projectRoot, "models");
 
 string[] options = ["--train", "--runs", "--sweep", "--values", "--binary", "--nn", "--knn", "--tree", "--gates",
-    "--perceptron", "--ovr", "--pocket"];
+    "--perceptron", "--ovr", "--pocket", "--weights"];
 string? unknownOption = args.FirstOrDefault(arg => arg.StartsWith("--") && !options.Contains(arg));
 if (unknownOption != null)
 {
@@ -91,6 +94,7 @@ if (valuesIndex >= 0)
 
 bool train = args.Contains("--train");
 bool binary = args.Contains("--binary");
+bool savedWeights = args.Contains("--weights");
 PerceptronSettings perceptron = new PerceptronSettings(
     args.Contains("--ovr") ? PerceptronRule.OneVsRest : PerceptronRule.MultiClass, args.Contains("--pocket"));
 LearningMethod method = args.Contains("--perceptron") ? LearningMethod.Perceptron
@@ -112,6 +116,7 @@ string modelName = method switch
     _ => "decision_tree",
 } + (binary ? "_binary" : "");
 string modelFile = Path.Combine(modelFolder, modelName + ".model");
+string weightsFile = Path.Combine(modelFolder, $"{modelName}_weights.json");
 
 if (sweepIndex >= 0)
 {
@@ -148,12 +153,36 @@ if (runs > 0)
     if (!File.Exists(outputFile))
         WriteFeatureFile();
 
-    List<double> accuracies = ModelTrainer.RunRepeated(outputFile, method, runs, binary, perceptron);
+    List<double> accuracies;
+    if (savedWeights)
+    {
+        if (!File.Exists(modelFile))
+        {
+            Console.WriteLine($"--weights needs a saved model, but there is none in {modelFolder}. Train one first.");
+            return 1;
+        }
+        TrainedModel? saved = LoadModel();
+        if (saved == null)
+            return 1;
+        if (!NetworkWeightsFile.Supports(saved))
+        {
+            Console.WriteLine("--weights only works with the neural network or the perceptron.");
+            return 1;
+        }
+        if (!ApplyWeights(saved))
+            return 1;
+        accuracies = ModelTrainer.EvaluateRepeated(outputFile, saved, runs);
+    }
+    else
+    {
+        accuracies = ModelTrainer.RunRepeated(outputFile, method, runs, binary, perceptron);
+    }
 
     // One line per run, so the results can be opened in a spreadsheet
     string evaluationFolder = Path.Combine(projectRoot, "evaluations");
     string evaluationFile = Path.Combine(evaluationFolder,
-        $"{Path.GetFileNameWithoutExtension(modelFile)}_{runs}_runs_{DateTime.Now:yyyy-MM-dd_HH-mm}.csv");
+        $"{Path.GetFileNameWithoutExtension(modelFile)}{(savedWeights ? "_weights" : "")}_{runs}_runs_" +
+        $"{DateTime.Now:yyyy-MM-dd_HH-mm}.csv");
     Directory.CreateDirectory(evaluationFolder);
     File.WriteAllLines(evaluationFile, ["run,seed,test accuracy",
         ..accuracies.Select((accuracy, i) =>
@@ -161,8 +190,6 @@ if (runs > 0)
     Console.WriteLine($"Saved the results to {evaluationFile}");
     return 0;
 }
-
-string weightsFile = Path.Combine(modelFolder, $"{modelName}_weights.json");
 
 TrainedModel? model = null;
 if (!train)
@@ -184,7 +211,7 @@ if (model == null)
     model.Save(modelFile);
     Console.WriteLine($"Saved the model to {modelFile}");
 
-    if (model.Network != null)
+    if (NetworkWeightsFile.Supports(model))
     {
         NetworkWeightsFile.Write(model, weightsFile);
         Console.WriteLine($"Wrote the neuron weights to {weightsFile}, edit it to change them");
@@ -200,18 +227,9 @@ if (model == null)
         Console.WriteLine($"Wrote the gate circuit to {circuitFile}");
     }
 }
-else if (model.Network != null && File.Exists(weightsFile))
+else if (NetworkWeightsFile.Supports(model) && !ApplyWeights(model))
 {
-    try
-    {
-        int changed = NetworkWeightsFile.Apply(model, weightsFile);
-        Console.WriteLine($"Applied {changed} weights and biases from {weightsFile}");
-    }
-    catch (InvalidDataException e)
-    {
-        Console.WriteLine($"Could not apply the neuron weights: {e.Message}");
-        return 1;
-    }
+    return 1;
 }
 
 if (images.Length > 0)
@@ -248,6 +266,24 @@ TrainedModel? LoadModel()
     {
         Console.WriteLine($"Could not load the saved model: {e.Message} Training it again.");
         return null;
+    }
+}
+
+// Changes the model's weights to the ones in its _weights.json, if there is one. False if the file is broken
+bool ApplyWeights(TrainedModel model)
+{
+    if (!File.Exists(weightsFile))
+        return true;
+    try
+    {
+        int changed = NetworkWeightsFile.Apply(model, weightsFile);
+        Console.WriteLine($"Applied {changed} weights and biases from {weightsFile}");
+        return true;
+    }
+    catch (InvalidDataException e)
+    {
+        Console.WriteLine($"Could not apply the neuron weights: {e.Message}");
+        return false;
     }
 }
 

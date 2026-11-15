@@ -23,6 +23,9 @@ public class TrainedModel
     // The network, if this model is one (for reading and changing its weights)
     public NeuralNetwork? Network => classifier as NeuralNetwork;
 
+    // The perceptron, if this model is one (for reading and changing its weights)
+    public Perceptron? Perceptron => classifier as Perceptron;
+
     // The logic gate network, if this model is one (for writing out its circuit)
     public LogicGateNetwork? Gates => classifier as LogicGateNetwork;
 
@@ -55,6 +58,9 @@ public class TrainedModel
     public static double[] Normalize(double[] input, double[] min, double[] max) => input
         .Select((value, f) => max[f] > min[f] ? (value - min[f]) / (max[f] - min[f]) : 0)
         .ToArray();
+
+    // Classifies a raw (not yet scaled) feature vector, e.g. one from image_data.json
+    public int Classify(double[] input) => classifier.Classify(Prepare(input));
 
     // Classifies one image: the detected concept plus the probability of every concept
     public (string Concept, double[] Probabilities) ClassifyImage(string imagePath)

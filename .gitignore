@@ -10,5 +10,7 @@ riderModule.iml
 **/*.jpeg
 # trained models (rebuild with --train)
 models/
+# results of runs
+evaluations/
 
 image_data.json

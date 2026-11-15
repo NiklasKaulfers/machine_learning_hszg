@@ -12,3 +12,6 @@ Tasks can often be broken down into smaller tasks, if possible use subagents to 
 
 # Behaviour with images
 A lot of the folders have no other contents other than .bmp or .jpg, do not try reading them, they re only useful for training. You do not need to know their precise maps.
+
+# Understanding the code
+There is a rough documentation in README.md refer to it if needed.

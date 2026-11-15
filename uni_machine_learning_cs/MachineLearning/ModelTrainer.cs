@@ -23,7 +23,8 @@ public record PerceptronSettings(PerceptronRule Rule = PerceptronRule.MultiClass
 // and reports the accuracy
 public static class ModelTrainer
 {
-    private const double TestShare = 0.7;
+    // Share of the images used for training, the rest is test data
+    private const double TrainingShare = 0.7;
     private const int Seed = 50;
 
     // Neural network: HiddenLayers hidden layers with HiddenNeurons neurons each
@@ -134,20 +135,57 @@ public static class ModelTrainer
         var (concepts, samples) = Load(jsonPath);
         Console.WriteLine($"Learning method: {method}, {runs} runs with different training / test splits");
 
+        // The runs don't depend on each other, so they are trained on all CPU cores at once (see Sweep)
+        List<double> accuracies = Enumerable.Range(1, runs)
+            .AsParallel()
+            .AsOrdered()
+            .Select(run => Train(concepts, samples, method, run, TextWriter.Null, DefaultComplexity(method), binary,
+                perceptron).testAccuracy)
+            .ToList();
+
+        PrintRuns(accuracies);
+        return accuracies;
+    }
+
+    // Tests an already trained model `runs` times on the test data of the same random splits that RunRepeated
+    // uses (seed 1, 2, ...), so its accuracies can be compared run by run with freshly trained models.
+    // Nothing is trained: this shows how good the model's current weights (e.g. edited by hand) are.
+    // Note that the model may have seen some of these test images while it was trained on its own split.
+    // Returns the test accuracy of every run
+    public static List<double> EvaluateRepeated(string jsonPath, TrainedModel model, int runs)
+    {
+        var (concepts, samples) = Load(jsonPath);
+        if (!concepts.SequenceEqual(model.concepts))
+            throw new InvalidDataException("The model knows different concepts than the feature file.");
+        Console.WriteLine($"Testing the saved {model.method} model {runs} times on different test splits");
+
+        // Rows = actual concept, columns = predicted concept, summed over all runs
+        int[,] confusion = new int[concepts.Length, concepts.Length];
         List<double> accuracies = [];
         for (int run = 1; run <= runs; run++)
         {
-            TrainedModel model = Train(concepts, samples, method, run, TextWriter.Null, DefaultComplexity(method), binary,
-                perceptron);
-            accuracies.Add(model.testAccuracy);
-            Console.WriteLine($"Run {run,3}: test accuracy {model.testAccuracy:P2}");
+            var (_, test) = Split(samples, run);
+            var predictions = test.AsParallel().Select(s => (s.Class, model.Classify(s.Input))).ToList();
+            foreach (var (actual, predicted) in predictions)
+                confusion[actual, predicted]++;
+            accuracies.Add(predictions.Count(p => p.Class == p.Item2) / (double)test.Count);
         }
+
+        PrintRuns(accuracies);
+        Console.WriteLine("Confusion matrix of all runs (rows = actual, columns = predicted):");
+        PrintConfusion(confusion, concepts, Console.Out);
+        return accuracies;
+    }
+
+    private static void PrintRuns(List<double> accuracies)
+    {
+        for (int run = 0; run < accuracies.Count; run++)
+            Console.WriteLine($"Run {run + 1,3}: test accuracy {accuracies[run]:P2}");
 
         double mean = accuracies.Average();
         double standardDeviation = Math.Sqrt(accuracies.Average(a => (a - mean) * (a - mean)));
         Console.WriteLine($"Mean {mean:P2}, standard deviation {standardDeviation:P2}, " +
                           $"min {accuracies.Min():P2}, max {accuracies.Max():P2}");
-        return accuracies;
     }
 
     private static (string[] Concepts, List<(double[] Input, int Class)> Samples) Load(string jsonPath)
@@ -169,10 +207,7 @@ public static class ModelTrainer
     {
         // Shuffle, then split into training and test data
         Random random = new Random(seed);
-        samples = samples.OrderBy(_ => random.Next()).ToList();
-        int testCount = (int)(samples.Count * TestShare);
-        List<(double[] Input, int Class)> test = samples.Take(testCount).ToList();
-        List<(double[] Input, int Class)> training = samples.Skip(testCount).ToList();
+        var (training, test) = Split(samples, seed, random);
 
         // Scale every feature to 0-1, using only the training data to find min / max
         int featureCount = samples[0].Input.Length;
@@ -218,6 +253,17 @@ public static class ModelTrainer
             PrintEvaluation(classifier, concepts, test, testAccuracy, log);
 
         return new TrainedModel(classifier, method, concepts, min, max, thresholds, DateTime.Now, testAccuracy);
+    }
+
+    // Shuffles the samples with the seed and splits them into training and test data. The same seed always
+    // gives the same split. random: the generator to keep using afterwards (it has drawn one number per sample)
+    private static (List<(double[] Input, int Class)> Training, List<(double[] Input, int Class)> Test) Split(
+        List<(double[] Input, int Class)> samples, int seed, Random? random = null)
+    {
+        random ??= new Random(seed);
+        samples = samples.OrderBy(_ => random.Next()).ToList();
+        int trainingCount = (int)(samples.Count * TrainingShare);
+        return (samples.Take(trainingCount).ToList(), samples.Skip(trainingCount).ToList());
     }
 
     private static NeuralNetwork TrainNeuralNetwork(List<(double[] Input, int Class)> training,
@@ -379,6 +425,11 @@ public static class ModelTrainer
             confusion[actual, predicted]++;
 
         log.WriteLine("Confusion matrix (rows = actual, columns = predicted):");
+        PrintConfusion(confusion, concepts, log);
+    }
+
+    private static void PrintConfusion(int[,] confusion, string[] concepts, TextWriter log)
+    {
         log.WriteLine($"{"",12}" + string.Concat(concepts.Select(c => $"{c,12}")));
         for (int a = 0; a < concepts.Length; a++)
         {

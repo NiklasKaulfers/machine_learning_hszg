@@ -43,7 +43,9 @@ public class Perceptron : IClassifier
     public int ClassCount => weights.GetLength(0);
 
     public double GetWeight(int concept, int input) => weights[concept, input];
+    public void SetWeight(int concept, int input, double value) => weights[concept, input] = value;
     public double GetBias(int concept) => biases[concept];
+    public void SetBias(int concept, double value) => biases[concept] = value;
 
     // Copy of the current weights, used to keep the best weights seen during training (pocket algorithm)
     public Perceptron Clone() => new Perceptron((double[,])weights.Clone(), (double[])biases.Clone(), rule);
