@@ -110,6 +110,7 @@ public class TrainedModel
                 LearningMethod.KNearestNeighbors => KNearestNeighbors.Read(reader),
                 LearningMethod.DecisionTree => DecisionTree.Read(reader),
                 LearningMethod.LogicGateNetwork => LogicGateNetwork.Read(reader),
+                LearningMethod.Perceptron => Perceptron.Read(reader),
                 _ => throw new InvalidDataException($"'{path}' contains an unknown learning method."),
             };
 

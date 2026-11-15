@@ -13,7 +13,12 @@ using uni_machine_learning_cs.MachineLearning;
 //                                    hidden layers (--nn), k (--knn) or the max depth (--tree). Saves the
 //                                    accuracies per value to evaluations/ (without --values, defaults are used)
 // <method> is --nn (neural network), --knn (k-nearest neighbors), --tree (decision tree) or
-// --gates (logic gate network: every neuron learns to be one of the 16 two-input logic gates).
+// --gates (logic gate network: every neuron learns to be one of the 16 two-input logic gates) or
+// --perceptron (single-layer network trained with the perceptron learning rule).
+// Perceptron variants: --ovr uses the classic rule where every output neuron learns "my concept or not" on its own
+// (default: multi-class rule, only the correct and the wrongly winning neuron learn), --pocket keeps the weights
+// with the best training accuracy instead of the last ones. For --sweep / --runs the value is the number of epochs.
+// Every variant is saved as its own model, e.g. perceptron_one_vs_rest_pocket.model
 // Without a method, it is asked for. The models are saved in the models folder of the project root.
 // --binary (works with every method) turns every feature into yes/no before training: 1 if it is above its
 // average in the training images, otherwise 0. Saved as its own model, e.g. neural_network_binary.model.
@@ -43,12 +48,14 @@ string projectRoot = rootDir?.FullName ?? Directory.GetCurrentDirectory();
 string outputFile = Path.Combine(projectRoot, "image_data.json");
 string modelFolder = Path.Combine(projectRoot, "models");
 
-string[] options = ["--train", "--runs", "--sweep", "--values", "--binary", "--nn", "--knn", "--tree", "--gates"];
+string[] options = ["--train", "--runs", "--sweep", "--values", "--binary", "--nn", "--knn", "--tree", "--gates",
+    "--perceptron", "--ovr", "--pocket"];
 string? unknownOption = args.FirstOrDefault(arg => arg.StartsWith("--") && !options.Contains(arg));
 if (unknownOption != null)
 {
     Console.WriteLine($"Unknown option {unknownOption}. Use --train, --runs <n> or --sweep <n>, " +
-                      "and one of --nn, --knn, --tree, --gates (optionally with --binary).");
+                      "and one of --nn, --knn, --tree, --gates, --perceptron (optionally with --binary; " +
+                      "--perceptron also takes --ovr and --pocket).");
     return 1;
 }
 
@@ -84,7 +91,10 @@ if (valuesIndex >= 0)
 
 bool train = args.Contains("--train");
 bool binary = args.Contains("--binary");
-LearningMethod method = args.Contains("--gates") ? LearningMethod.LogicGateNetwork
+PerceptronSettings perceptron = new PerceptronSettings(
+    args.Contains("--ovr") ? PerceptronRule.OneVsRest : PerceptronRule.MultiClass, args.Contains("--pocket"));
+LearningMethod method = args.Contains("--perceptron") ? LearningMethod.Perceptron
+    : args.Contains("--gates") ? LearningMethod.LogicGateNetwork
     : args.Contains("--tree") ? LearningMethod.DecisionTree
     : args.Contains("--knn") ? LearningMethod.KNearestNeighbors
     : args.Contains("--nn") ? LearningMethod.NeuralNetwork
@@ -98,6 +108,7 @@ string modelName = method switch
     LearningMethod.NeuralNetwork => "neural_network",
     LearningMethod.KNearestNeighbors => "k_nearest_neighbors",
     LearningMethod.LogicGateNetwork => "logic_gate_network",
+    LearningMethod.Perceptron => $"perceptron_{perceptron.Name}",
     _ => "decision_tree",
 } + (binary ? "_binary" : "");
 string modelFile = Path.Combine(modelFolder, modelName + ".model");
@@ -108,7 +119,7 @@ if (sweepIndex >= 0)
         WriteFeatureFile();
 
     var results = ModelTrainer.Sweep(outputFile, method, sweepValues ?? ModelTrainer.DefaultSweepValues(method), runs,
-        binary);
+        binary, perceptron);
 
     // One line per value: summary first, then the accuracy of every run, so it can be charted in a spreadsheet
     var culture = System.Globalization.CultureInfo.InvariantCulture;
@@ -137,7 +148,7 @@ if (runs > 0)
     if (!File.Exists(outputFile))
         WriteFeatureFile();
 
-    List<double> accuracies = ModelTrainer.RunRepeated(outputFile, method, runs, binary);
+    List<double> accuracies = ModelTrainer.RunRepeated(outputFile, method, runs, binary, perceptron);
 
     // One line per run, so the results can be opened in a spreadsheet
     string evaluationFolder = Path.Combine(projectRoot, "evaluations");
@@ -168,7 +179,7 @@ if (model == null)
 
     // Train on the vectors that were just written and keep the result for the next runs
     Console.WriteLine();
-    model = ModelTrainer.Run(outputFile, method, binary);
+    model = ModelTrainer.Run(outputFile, method, binary, perceptron);
     Directory.CreateDirectory(modelFolder);
     model.Save(modelFile);
     Console.WriteLine($"Saved the model to {modelFile}");
@@ -249,6 +260,7 @@ LearningMethod AskLearningMethod()
         Console.WriteLine("  2) k-nearest neighbors");
         Console.WriteLine("  3) decision tree");
         Console.WriteLine("  4) logic gate network");
+        Console.WriteLine("  5) perceptron (single layer)");
         Console.Write("Choice [1]: ");
         switch (Console.ReadLine()?.Trim().ToLowerInvariant())
         {
@@ -260,8 +272,10 @@ LearningMethod AskLearningMethod()
                 return LearningMethod.DecisionTree;
             case "4" or "gates":
                 return LearningMethod.LogicGateNetwork;
+            case "5" or "perceptron":
+                return LearningMethod.Perceptron;
             default:
-                Console.WriteLine("Please enter 1, 2, 3 or 4.");
+                Console.WriteLine("Please enter 1, 2, 3, 4 or 5.");
                 break;
         }
     }

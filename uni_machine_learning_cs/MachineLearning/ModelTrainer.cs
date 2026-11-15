@@ -8,6 +8,15 @@ public enum LearningMethod
     KNearestNeighbors,
     DecisionTree,
     LogicGateNetwork,
+    Perceptron,
+}
+
+// Variants of the perceptron that can be compared with each other.
+// Pocket: keep the weights with the best training accuracy seen after any epoch instead of the last ones. Without
+// it, the weights keep jumping around if the concepts can't be separated by straight lines (hyperplanes)
+public record PerceptronSettings(PerceptronRule Rule = PerceptronRule.MultiClass, bool Pocket = false)
+{
+    public string Name => (Rule == PerceptronRule.MultiClass ? "multiclass" : "one_vs_rest") + (Pocket ? "_pocket" : "");
 }
 
 // Loads the feature vectors from the JSON file, trains a classifier on them with the chosen learning method
@@ -37,22 +46,30 @@ public static class ModelTrainer
     private const int GateBatchSize = 100;
     private const double GateLearningRate = 0.01;
 
+    // Perceptron: maximum number of passes over the training data (stops earlier if an epoch has no mistakes).
+    // The learning rate makes no difference because the weights start at 0 (see Perceptron)
+    private const int PerceptronEpochs = 100;
+    private const double PerceptronLearningRate = 1;
+
     // Prints the training progress, test accuracy and confusion matrix.
     // binary: every feature is turned into yes/no (above its average in the training data or not) first
-    public static TrainedModel Run(string jsonPath, LearningMethod method, bool binary)
+    public static TrainedModel Run(string jsonPath, LearningMethod method, bool binary,
+        PerceptronSettings? perceptron = null)
     {
         var (concepts, samples) = Load(jsonPath);
-        return Train(concepts, samples, method, Seed, Console.Out, DefaultComplexity(method), binary);
+        return Train(concepts, samples, method, Seed, Console.Out, DefaultComplexity(method), binary,
+            perceptron ?? new PerceptronSettings());
     }
 
     // The setting that makes each method simpler or more complex:
     // neural network = number of hidden layers (its depth), k-NN = k, decision tree = max depth,
-    // logic gate network = number of gate layers
+    // logic gate network = number of gate layers, perceptron = number of epochs
     public static string ComplexityName(LearningMethod method) => method switch
     {
         LearningMethod.NeuralNetwork => "hidden layers",
         LearningMethod.KNearestNeighbors => "k",
         LearningMethod.LogicGateNetwork => "gate layers",
+        LearningMethod.Perceptron => "epochs",
         _ => "max depth",
     };
 
@@ -61,6 +78,7 @@ public static class ModelTrainer
         LearningMethod.NeuralNetwork => HiddenLayers,
         LearningMethod.KNearestNeighbors => Neighbors,
         LearningMethod.LogicGateNetwork => GateLayers,
+        LearningMethod.Perceptron => PerceptronEpochs,
         _ => MaxDepth,
     };
 
@@ -70,6 +88,7 @@ public static class ModelTrainer
         LearningMethod.NeuralNetwork => [0, 1, 2, 3, 4, 5],
         LearningMethod.KNearestNeighbors => [1, 3, 5, 7, 9, 15, 21, 31, 51, 101],
         LearningMethod.LogicGateNetwork => [1, 2, 3, 4, 6, 8],
+        LearningMethod.Perceptron => [1, 2, 5, 10, 20, 50, 100, 200],
         _ => [1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30],
     };
 
@@ -77,8 +96,9 @@ public static class ModelTrainer
     // tested on the same splits). Shows how the depth / k changes the test accuracy.
     // Returns the test accuracies of every run for every value
     public static List<(int Value, List<double> Accuracies)> Sweep(string jsonPath, LearningMethod method,
-        int[] values, int runs, bool binary)
+        int[] values, int runs, bool binary, PerceptronSettings? perceptron = null)
     {
+        perceptron ??= new PerceptronSettings();
         var (concepts, samples) = Load(jsonPath);
         string name = ComplexityName(method);
         Console.WriteLine($"Learning method: {method}, {name} = {string.Join(", ", values)}, {runs} runs each");
@@ -91,7 +111,8 @@ public static class ModelTrainer
             List<double> accuracies = Enumerable.Range(1, runs)
                 .AsParallel()
                 .AsOrdered()
-                .Select(run => Train(concepts, samples, method, run, TextWriter.Null, value, binary).testAccuracy)
+                .Select(run => Train(concepts, samples, method, run, TextWriter.Null, value, binary, perceptron)
+                    .testAccuracy)
                 .ToList();
 
             double mean = accuracies.Average();
@@ -106,15 +127,18 @@ public static class ModelTrainer
     // Trains and tests the method `runs` times, each time with a different random split into training and
     // test data (seed 1, 2, ...). Shows how much the accuracy depends on which images end up in the test data.
     // Returns the test accuracy of every run
-    public static List<double> RunRepeated(string jsonPath, LearningMethod method, int runs, bool binary)
+    public static List<double> RunRepeated(string jsonPath, LearningMethod method, int runs, bool binary,
+        PerceptronSettings? perceptron = null)
     {
+        perceptron ??= new PerceptronSettings();
         var (concepts, samples) = Load(jsonPath);
         Console.WriteLine($"Learning method: {method}, {runs} runs with different training / test splits");
 
         List<double> accuracies = [];
         for (int run = 1; run <= runs; run++)
         {
-            TrainedModel model = Train(concepts, samples, method, run, TextWriter.Null, DefaultComplexity(method), binary);
+            TrainedModel model = Train(concepts, samples, method, run, TextWriter.Null, DefaultComplexity(method), binary,
+                perceptron);
             accuracies.Add(model.testAccuracy);
             Console.WriteLine($"Run {run,3}: test accuracy {model.testAccuracy:P2}");
         }
@@ -141,7 +165,7 @@ public static class ModelTrainer
     // log: where the training progress and evaluation are written (TextWriter.Null to stay quiet)
     // complexity: hidden layers (neural network), k (k-NN) or max depth (decision tree), see ComplexityName
     private static TrainedModel Train(string[] concepts, List<(double[] Input, int Class)> samples,
-        LearningMethod method, int seed, TextWriter log, int complexity, bool binary)
+        LearningMethod method, int seed, TextWriter log, int complexity, bool binary, PerceptronSettings perceptron)
     {
         // Shuffle, then split into training and test data
         Random random = new Random(seed);
@@ -183,6 +207,8 @@ public static class ModelTrainer
             LearningMethod.DecisionTree => TrainDecisionTree(training, test, concepts.Length, complexity, log),
             LearningMethod.LogicGateNetwork => TrainLogicGateNetwork(training, test, featureCount, concepts.Length,
                 complexity, random, seed, log),
+            LearningMethod.Perceptron => TrainPerceptron(training, test, featureCount, concepts.Length, complexity,
+                perceptron, random, log),
             _ => throw new ArgumentOutOfRangeException(nameof(method), method, null),
         };
 
@@ -221,6 +247,50 @@ public static class ModelTrainer
         }
 
         return network;
+    }
+
+    // Perceptron learning rule: go through the (shuffled) training vectors, a neuron changes its weights only when
+    // it was wrong. Stops early once a whole epoch has no mistakes: then the training data is linearly separable
+    // and the perceptron convergence theorem says it found separating weights
+    private static Perceptron TrainPerceptron(List<(double[] Input, int Class)> training,
+        List<(double[] Input, int Class)> test, int featureCount, int classCount, int epochs,
+        PerceptronSettings settings, Random random, TextWriter log)
+    {
+        training = Balance(training);
+        Perceptron perceptron = new Perceptron(featureCount, classCount, settings.Rule);
+        Perceptron best = perceptron.Clone();
+        double bestAccuracy = -1;
+
+        log.WriteLine($"Training on {training.Count} vectors, testing on {test.Count}");
+        log.WriteLine($"Single layer: {featureCount} inputs -> {classCount} output neurons, " +
+                      $"rule {settings.Rule}, pocket {(settings.Pocket ? "on" : "off")}, up to {epochs} epochs");
+
+        for (int epoch = 1; epoch <= epochs; epoch++)
+        {
+            int mistakes = training.OrderBy(_ => random.Next())
+                .Count(sample => perceptron.Train(sample.Input, sample.Class, PerceptronLearningRate));
+
+            double accuracy = settings.Pocket || log != TextWriter.Null ? Accuracy(perceptron, training) : 0;
+            if (settings.Pocket && accuracy > bestAccuracy)
+            {
+                bestAccuracy = accuracy;
+                best = perceptron.Clone();
+            }
+
+            if (log != TextWriter.Null && (epoch == 1 || epoch % 10 == 0 || mistakes == 0))
+                log.WriteLine($"Epoch {epoch,3}: {mistakes} mistakes while learning, " +
+                              $"training accuracy {accuracy:P1}");
+
+            if (mistakes == 0)
+            {
+                log.WriteLine($"No mistakes in epoch {epoch}, the training data is linearly separable");
+                break;
+            }
+        }
+
+        if (settings.Pocket)
+            log.WriteLine($"Pocket: using the weights with training accuracy {bestAccuracy:P1}");
+        return settings.Pocket ? best : perceptron;
     }
 
     private static LogicGateNetwork TrainLogicGateNetwork(List<(double[] Input, int Class)> training,
