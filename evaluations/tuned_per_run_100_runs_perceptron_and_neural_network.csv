@@ -1,0 +1,209 @@
+method,run,seed,untuned test accuracy,tuned test accuracy,gain,untuned validation accuracy,tuned validation accuracy,changes
+perceptron,1,1,0.8453,0.8649,+0.0196,0.8524,0.8660,arrow pattern x76; bias left turn -30.57; bias right of way +22.93; bias right turn +15.28; bias stop sign +15.28; bias yield -22.93
+perceptron,2,2,0.7855,0.8538,+0.0683,0.7811,0.8587,arrow pattern x76; lettering x152; bias left turn -37.98; bias right of way +15.19; bias right turn +7.6; bias stop sign -151.91; bias yield +182.29
+perceptron,3,3,0.8487,0.8656,+0.0169,0.8531,0.8698,arrow pattern x75; bias left turn +22.45; bias right of way -59.87; bias right turn -7.48; bias stop sign +7.48; bias yield +7.48
+perceptron,4,4,0.7880,0.8601,+0.0721,0.7906,0.8466,arrow pattern x156; bias left turn +140.06; bias right of way +54.47; bias right turn -46.69
+perceptron,5,5,0.8350,0.8647,+0.0297,0.8325,0.8708,arrow pattern x71; bias left turn +128.49; bias right of way +7.14; bias right turn +14.28; bias stop sign -7.14
+perceptron,6,6,0.8278,0.8556,+0.0278,0.8291,0.8587,lettering x77; bias left turn +7.67; bias right of way +23; bias right turn +7.67; bias stop sign +53.66; bias yield -61.32
+perceptron,7,7,0.8558,0.8680,+0.0122,0.8476,0.8689,bias left turn +53.11; bias right of way +45.52; bias right turn +7.59; bias stop sign -22.76; bias yield -7.59
+perceptron,8,8,0.7062,0.8434,+0.1372,0.7031,0.8514,arrow pattern x147; lettering x73; bias left turn +139.46; bias right turn -58.72; bias stop sign -242.23; bias yield +102.76
+perceptron,9,9,0.7802,0.8484,+0.0682,0.7780,0.8577,arrow pattern x603; bias left turn +45.2; bias right of way +97.93; bias right turn -82.86; bias stop sign +37.67
+perceptron,10,10,0.8589,0.8632,+0.0043,0.8505,0.8599,lettering x76; bias left turn +7.64; bias right of way +15.28; bias stop sign +45.83; bias yield -7.64
+perceptron,11,11,0.7581,0.8527,+0.0946,0.7625,0.8623,arrow pattern x75; bias left turn -135.8; bias right of way -37.72; bias stop sign -135.8; bias yield +15.09
+perceptron,12,12,0.8307,0.8676,+0.0369,0.8345,0.8745,arrow pattern x75; bias left turn +59.95; bias right of way +14.99
+perceptron,13,13,0.8354,0.8642,+0.0288,0.8262,0.8645,arrow pattern x295; bias left turn -272.49; bias right turn -58.92; bias stop sign +58.92; bias yield +14.73
+perceptron,14,14,0.8028,0.8651,+0.0623,0.7942,0.8619,arrow pattern x151; bias left turn +15.09; bias right of way -22.64; bias right turn -120.75; bias stop sign +60.38
+perceptron,15,15,0.8111,0.8630,+0.0519,0.8093,0.8551,arrow pattern x149; bias left turn +118.91; bias right of way +111.48; bias right turn -22.3; bias yield +14.86
+perceptron,16,16,0.8536,0.8628,+0.0092,0.8546,0.8701,arrow pattern x75; bias left turn +22.62; bias right of way +82.93; bias stop sign +67.85; bias yield -15.08
+perceptron,17,17,0.8595,0.8668,+0.0073,0.8602,0.8701,arrow pattern x76; bias left turn +22.81; bias right of way +45.61; bias stop sign -22.81
+perceptron,18,18,0.7829,0.8474,+0.0645,0.8063,0.8711,lettering x151; bias left turn -45.31; bias right of way +30.21; bias stop sign -158.58; bias yield +120.82
+perceptron,19,19,0.8349,0.8544,+0.0195,0.8362,0.8621,arrow pattern x75; lettering x75; bias left turn +7.49; bias right of way +37.46; bias stop sign +97.38; bias yield +7.49
+perceptron,20,20,0.8356,0.8558,+0.0202,0.8393,0.8667,arrow pattern x153; bias left turn +7.63; bias right of way +38.15; bias stop sign -22.89; bias yield +22.89
+perceptron,21,21,0.8225,0.8580,+0.0355,0.8112,0.8645,arrow pattern x77; lettering x153; bias left turn +69; bias right of way +130.33; bias right turn -23; bias stop sign +7.67; bias yield -7.67
+perceptron,22,22,0.7567,0.8563,+0.0996,0.7557,0.8682,arrow pattern x153; bias left turn -137.31; bias right of way -7.63; bias right turn +38.14; bias stop sign -99.17; bias yield +53.4
+perceptron,23,23,0.7906,0.8537,+0.0631,0.7804,0.8519,arrow pattern x308; lettering x154; bias left turn -69.23; bias right of way +23.08; bias right turn -115.39; bias stop sign -169.23; bias yield +138.46
+perceptron,24,24,0.8575,0.8711,+0.0136,0.8645,0.8786,bias left turn -21.83; bias right of way -50.94; bias stop sign -43.66; bias yield +7.28
+perceptron,25,25,0.8678,0.8728,+0.0050,0.8626,0.8737,bias left turn -59.06; bias right of way +44.29; bias right turn -22.15; bias stop sign +22.15
+perceptron,26,26,0.8019,0.8535,+0.0516,0.7950,0.8565,arrow pattern x74; lettering x149; bias left turn +44.6; bias right of way -22.3; bias right turn -59.47; bias stop sign +52.04; bias yield -59.47
+perceptron,27,27,0.7292,0.8513,+0.1221,0.7373,0.8483,arrow pattern x308; lettering x154; bias left turn -284.68; bias right of way -30.78; bias right turn +7.69; bias stop sign -100.02; bias yield +138.49
+perceptron,28,28,0.8406,0.8624,+0.0218,0.8420,0.8667,arrow pattern x151; bias left turn +60.29; bias right turn -15.07; bias stop sign -22.61
+perceptron,29,29,0.7498,0.8545,+0.1047,0.7525,0.8500,arrow pattern x151; lettering x75; bias left turn -248.33; bias right of way -188.13; bias right turn -22.58; bias stop sign -22.58; bias yield +22.58
+perceptron,30,30,0.7725,0.8622,+0.0897,0.7683,0.8589,arrow pattern x306; bias left turn -291.02; bias right of way +22.98; bias right turn +7.66; bias stop sign -61.27; bias yield +7.66
+perceptron,31,31,0.8069,0.8632,+0.0563,0.8114,0.8689,arrow pattern x76; lettering x152; bias left turn -45.69; bias right of way -137.06; bias right turn +7.61; bias stop sign -121.83; bias yield +114.21
+perceptron,32,32,0.7099,0.8476,+0.1377,0.6903,0.8548,arrow pattern x590; lettering x74; bias left turn -353.89; bias right of way +22.12; bias right turn -14.75; bias stop sign -221.18; bias yield +51.61
+perceptron,33,33,0.8272,0.8530,+0.0258,0.8260,0.8565,arrow pattern x152; lettering x76; bias left turn +136.95; bias right of way +15.22; bias stop sign +7.61; bias yield -22.82
+perceptron,34,34,0.8345,0.8652,+0.0307,0.8284,0.8631,bias left turn +7.41; bias right of way -22.24; bias stop sign -96.36; bias yield +14.82
+perceptron,35,35,0.7163,0.8532,+0.1369,0.7218,0.8541,arrow pattern x589; bias left turn +80.94; bias right of way +66.23; bias right turn -191.32; bias stop sign -80.94; bias yield +73.58
+perceptron,36,36,0.8230,0.8595,+0.0365,0.8291,0.8713,arrow pattern x151; bias left turn -105.67; bias right of way -22.64; bias right turn -22.64; bias stop sign -128.31; bias yield -37.74
+perceptron,37,37,0.7886,0.8556,+0.0670,0.7811,0.8604,arrow pattern x75; bias left turn +52.28; bias right of way +52.28; bias right turn +7.47; bias stop sign -134.42; bias yield +44.81
+perceptron,38,38,0.7818,0.8503,+0.0685,0.7717,0.8463,arrow pattern x151; bias left turn +90.78; bias right of way +98.34; bias right turn -37.82; bias stop sign +136.17; bias yield -7.56
+perceptron,39,39,0.7919,0.8579,+0.0660,0.7862,0.8592,arrow pattern x149; bias left turn -134.31; bias right of way +111.93; bias right turn -7.46; bias stop sign +22.39; bias yield -22.39
+perceptron,40,40,0.8457,0.8573,+0.0116,0.8473,0.8635,bias left turn -22.63; bias right of way +98.08; bias right turn +7.54; bias stop sign +52.81; bias yield -60.36
+perceptron,41,41,0.8073,0.8520,+0.0447,0.7957,0.8563,arrow pattern x76; bias left turn +75.5; bias right of way +135.9; bias right turn -7.55; bias stop sign +113.25; bias yield -37.75
+perceptron,42,42,0.7805,0.8539,+0.0734,0.7911,0.8616,arrow pattern x77; lettering x154; bias left turn -7.71; bias right of way -77.09; bias right turn +15.42; bias stop sign -231.26; bias yield +107.92
+perceptron,43,43,0.8306,0.8531,+0.0225,0.8323,0.8592,lettering x155; bias left turn +15.47; bias right of way +85.09; bias stop sign +69.62; bias yield -7.74
+perceptron,44,44,0.8054,0.8613,+0.0559,0.8066,0.8638,arrow pattern x77; bias left turn -38.55; bias right of way +53.97; bias stop sign -131.06; bias yield +30.84
+perceptron,45,45,0.7671,0.8445,+0.0774,0.7770,0.8466,arrow pattern x150; lettering x150; bias left turn +112.78; bias right of way -60.15; bias stop sign +97.74
+perceptron,46,46,0.8537,0.8621,+0.0084,0.8570,0.8677,arrow pattern x75; bias left turn -37.43; bias right of way +82.35; bias right turn +14.97; bias stop sign +52.4; bias yield +7.49
+perceptron,47,47,0.7475,0.8338,+0.0863,0.7564,0.8396,arrow pattern x298; lettering x149; bias left turn +238.78; bias right of way -7.46; bias right turn -52.23; bias stop sign +44.77; bias yield +14.92
+perceptron,48,48,0.7683,0.8567,+0.0884,0.7763,0.8645,arrow pattern x606; bias left turn -287.96; bias right of way -7.58; bias right turn +90.93; bias stop sign +15.16
+perceptron,49,49,0.7382,0.8531,+0.1149,0.7227,0.8558,arrow pattern x294; bias left turn +117.52; bias right of way +22.04; bias right turn -58.76; bias stop sign -132.21; bias yield +51.42
+perceptron,50,50,0.8576,0.8652,+0.0076,0.8497,0.8572,bias left turn +23.14; bias right of way +23.14; bias right turn -7.71; bias stop sign -7.71
+perceptron,51,51,0.8661,0.8666,+0.0005,0.8650,0.8662,bias right of way +38.21; bias stop sign -7.64
+perceptron,52,52,0.7740,0.8581,+0.0841,0.7855,0.8686,arrow pattern x306; bias left turn +267.44; bias right of way +53.49; bias stop sign -7.64
+perceptron,53,53,0.8389,0.8708,+0.0319,0.8381,0.8711,arrow pattern x76; bias left turn -61.19; bias right of way -61.19; bias right turn +22.95
+perceptron,54,54,0.8608,0.8747,+0.0139,0.8488,0.8715,arrow pattern x76; bias left turn -38.14; bias right of way -129.68; bias right turn -76.28; bias stop sign -61.02
+perceptron,55,55,0.8118,0.8593,+0.0475,0.8134,0.8652,arrow pattern x152; bias left turn +91.26; bias right of way +15.21; bias right turn -53.24; bias stop sign -7.61; bias yield +38.03
+perceptron,56,56,0.8336,0.8538,+0.0202,0.8277,0.8454,arrow pattern x78; lettering x155; bias left turn +7.76; bias right of way +46.57; bias stop sign +15.52; bias yield -23.29
+perceptron,57,57,0.8400,0.8736,+0.0336,0.8461,0.8764,arrow pattern x75; bias left turn -60.24; bias right of way -143.08; bias stop sign -7.53; bias yield +7.53
+perceptron,58,58,0.8454,0.8590,+0.0136,0.8468,0.8728,bias left turn -23.05; bias right of way +61.47; bias right turn +7.68; bias stop sign +76.84; bias yield -38.42
+perceptron,59,59,0.7531,0.8406,+0.0875,0.7499,0.8456,arrow pattern x611; bias left turn +137.44; bias right of way +129.8; bias right turn -114.53; bias stop sign +114.53; bias yield -91.62
+perceptron,60,60,0.8008,0.8582,+0.0574,0.7947,0.8563,arrow pattern x151; bias left turn -135.76; bias right of way -22.63; bias right turn +15.08; bias stop sign +52.8; bias yield -37.71
+perceptron,61,61,0.7761,0.8613,+0.0852,0.7596,0.8495,arrow pattern x308; bias left turn +146.2; bias right of way -30.78; bias right turn -46.17; bias stop sign -38.47; bias yield +46.17
+perceptron,62,62,0.7758,0.8553,+0.0795,0.7734,0.8582,arrow pattern x302; bias left turn -286.83; bias right of way -37.74; bias right turn +7.55; bias stop sign +45.29
+perceptron,63,63,0.7834,0.8479,+0.0645,0.7908,0.8580,arrow pattern x152; bias left turn +98.98; bias right of way +53.3; bias right turn -45.68; bias stop sign +53.3; bias yield -76.14
+perceptron,64,64,0.8169,0.8583,+0.0414,0.8105,0.8631,lettering x156; bias left turn -62.5; bias right of way -39.06; bias right turn +7.81; bias stop sign -70.31; bias yield +101.56
+perceptron,65,65,0.8227,0.8500,+0.0273,0.8206,0.8534,lettering x307; bias left turn -30.67; bias right of way +7.67; bias right turn +7.67; bias stop sign +7.67
+perceptron,66,66,0.7620,0.8358,+0.0738,0.7739,0.8444,arrow pattern x76; lettering x304; bias left turn +113.82; bias right of way -68.29; bias right turn -30.35; bias stop sign +45.53; bias yield +15.18
+perceptron,67,67,0.8165,0.8597,+0.0432,0.8223,0.8684,arrow pattern x75; lettering x75; bias left turn -135.52; bias right of way +15.06; bias right turn -15.06; bias stop sign +22.59; bias yield -60.23
+perceptron,68,68,0.8666,0.8725,+0.0059,0.8570,0.8711,arrow pattern x76; bias left turn -30.5; bias right of way +15.25; bias right turn +7.63; bias stop sign -68.63; bias yield +7.63
+perceptron,69,69,0.8712,0.8702,-0.0010,0.8706,0.8752,bias left turn -15.2; bias right of way +37.99; bias right turn +7.6; bias stop sign +53.19
+perceptron,70,70,0.7863,0.8618,+0.0755,0.7714,0.8606,arrow pattern x152; bias left turn +136.75; bias right of way -22.79; bias stop sign -15.19; bias yield +37.99
+perceptron,71,71,0.8301,0.8590,+0.0289,0.8257,0.8650,arrow pattern x75; bias left turn +60.33; bias stop sign +67.87; bias yield -7.54
+perceptron,72,72,0.8425,0.8645,+0.0220,0.8512,0.8643,arrow pattern x74; bias left turn +51.7; bias right of way +7.39; bias right turn -36.93; bias stop sign +22.16; bias yield +14.77
+perceptron,73,73,0.7840,0.8587,+0.0747,0.7923,0.8701,arrow pattern x148; bias left turn -133.06; bias right of way -59.14; bias right turn -22.18; bias stop sign -59.14; bias yield +51.74
+perceptron,74,74,0.8010,0.8624,+0.0614,0.8177,0.8694,arrow pattern x76; bias left turn -129.86; bias right of way +15.28; bias right turn -7.64; bias stop sign +7.64
+perceptron,75,75,0.8416,0.8595,+0.0179,0.8417,0.8650,arrow pattern x75; lettering x75; bias left turn -45.02; bias right of way +97.54; bias right turn +15.01; bias stop sign +52.52
+perceptron,76,76,0.7324,0.8388,+0.1064,0.7259,0.8388,arrow pattern x599; bias left turn -284.39; bias right of way +67.35; bias right turn +127.23; bias stop sign +209.55; bias yield -7.48
+perceptron,77,77,0.8270,0.8546,+0.0276,0.8374,0.8609,lettering x299; bias left turn -7.48; bias right of way +82.3; bias stop sign +22.45; bias yield -37.41
+perceptron,78,78,0.8665,0.8656,-0.0009,0.8662,0.8706,bias left turn -29.81; bias right of way +37.26
+perceptron,79,79,0.8014,0.8602,+0.0588,0.7937,0.8645,bias left turn +7.91; bias right of way +63.25; bias stop sign -142.32; bias yield +23.72
+perceptron,80,80,0.8311,0.8626,+0.0315,0.8391,0.8703,bias left turn -60.3; bias right of way +60.3; bias right turn +15.07; bias stop sign -67.83; bias yield +7.54
+perceptron,81,81,0.8209,0.8591,+0.0382,0.8253,0.8667,arrow pattern x74; lettering x74; bias left turn -58.91; bias right of way -81; bias right turn -22.09; bias stop sign +73.63; bias yield -44.18
+perceptron,82,82,0.7750,0.8532,+0.0782,0.7797,0.8667,arrow pattern x153; bias left turn +161.11; bias right of way +53.7; bias right turn -61.38; bias stop sign -15.34
+perceptron,83,83,0.7282,0.8487,+0.1205,0.7230,0.8558,arrow pattern x308; lettering x77; bias left turn -300.23; bias right of way -277.14; bias right turn -123.17; bias stop sign -61.59; bias yield +7.7
+perceptron,84,84,0.7775,0.8673,+0.0898,0.7731,0.8580,arrow pattern x154; bias left turn +138.21; bias right of way +38.39; bias right turn -46.07; bias stop sign -61.43
+perceptron,85,85,0.8350,0.8677,+0.0327,0.8408,0.8791,arrow pattern x73; bias left turn -65.84; bias right of way -43.89; bias right turn +7.32; bias stop sign -65.84; bias yield +29.26
+perceptron,86,86,0.8350,0.8558,+0.0208,0.8320,0.8691,bias left turn +60.55; bias right of way +128.67; bias right turn -7.57; bias stop sign +45.41; bias yield -60.55
+perceptron,87,87,0.7326,0.8319,+0.0993,0.7295,0.8391,arrow pattern x307; lettering x307; bias left turn -276.26; bias right turn +99.76; bias stop sign +15.35
+perceptron,88,88,0.7630,0.8330,+0.0700,0.7744,0.8425,arrow pattern x76; lettering x305; bias left turn -45.7; bias right of way +60.93; bias right turn +22.85; bias stop sign +152.32; bias yield -15.23
+perceptron,89,89,0.8082,0.8610,+0.0528,0.7959,0.8657,arrow pattern x80; bias left turn +128.22; bias right of way -24.04; bias right turn -40.07; bias stop sign +24.04
+perceptron,90,90,0.8584,0.8634,+0.0050,0.8563,0.8650,arrow pattern x77; lettering x77; bias left turn -7.73; bias right of way -92.74; bias stop sign -23.18
+perceptron,91,91,0.8710,0.8718,+0.0008,0.8597,0.8698,bias left turn +62.77; bias right of way -23.54
+perceptron,92,92,0.8104,0.8596,+0.0492,0.7988,0.8543,arrow pattern x156; bias left turn -132.93; bias right of way -15.64; bias right turn -46.92; bias stop sign +54.74
+perceptron,93,93,0.8140,0.8380,+0.0240,0.8173,0.8463,lettering x150; bias right of way +90.14; bias stop sign +60.1; bias yield -7.51
+perceptron,94,94,0.7991,0.8567,+0.0576,0.7988,0.8580,arrow pattern x78; bias left turn +15.56; bias right of way -256.67; bias right turn -7.78; bias stop sign -7.78; bias yield -23.33
+perceptron,95,95,0.8696,0.8704,+0.0008,0.8657,0.8706,bias right of way +30.62; bias stop sign -7.66
+perceptron,96,96,0.8588,0.8721,+0.0133,0.8660,0.8854,bias left turn +23.26; bias right of way +62.03; bias stop sign -46.52; bias yield +23.26
+perceptron,97,97,0.7983,0.8576,+0.0593,0.8093,0.8640,arrow pattern x152; bias left turn +129.49; bias right of way +22.85; bias stop sign -7.62
+perceptron,98,98,0.7679,0.8524,+0.0845,0.7647,0.8638,lettering x75; bias left turn +67.65; bias right of way +7.52; bias right turn -30.07; bias stop sign -150.33; bias yield +120.26
+perceptron,99,99,0.8595,0.8710,+0.0115,0.8507,0.8660,arrow pattern x75; bias left turn +22.44; bias right of way +29.92; bias stop sign +14.96
+perceptron,100,100,0.8692,0.8695,+0.0003,0.8577,0.8648,arrow pattern x75; bias left turn -15.05; bias right of way +52.69; bias stop sign +7.53; bias yield -7.53
+perceptron,mean,,0.8092,0.8582,+0.0490,,,
+perceptron,standard deviation,,0.0415,0.0092,+0.0353,,,
+perceptron,min,,0.7062,0.8319,-0.0010,,,
+perceptron,max,,0.8712,0.8747,+0.1377,,,
+neural network,1,1,0.8857,0.8960,+0.0103,0.8854,0.9035,cut hidden 1 neuron 20; cut hidden 1 neuron 11; bias left turn -0.15; bias right of way +0.9; bias right turn +0.05; bias stop sign +0.8; bias yield -0.15
+neural network,2,2,0.9054,0.9149,+0.0095,0.9089,0.9159,cut hidden 1 neuron 31; bias right of way +0.4; bias stop sign +0.25
+neural network,3,3,0.8762,0.8877,+0.0115,0.8728,0.8919,cut hidden 1 neuron 26; cut hidden 1 neuron 24; cut hidden 1 neuron 11; cut hidden 1 neuron 2
+neural network,4,4,0.8908,0.9092,+0.0184,0.8858,0.9081,cut hidden 1 neuron 21; cut hidden 1 neuron 16; cut hidden 1 neuron 8; cut hidden 1 neuron 18; bias right of way -0.45; bias stop sign -0.2; bias yield +0.25
+neural network,5,5,0.8934,0.9022,+0.0088,0.9006,0.9101,cut hidden 1 neuron 21; cut hidden 1 neuron 4; bias right of way +0.75; bias stop sign +0.15; bias yield -0.05
+neural network,6,6,0.8986,0.9021,+0.0035,0.9064,0.9108,cut hidden 1 neuron 7; bias left turn +0.15; bias right of way +0.2
+neural network,7,7,0.8919,0.9023,+0.0104,0.8866,0.9011,cut hidden 1 neuron 26; cut hidden 1 neuron 12; cut hidden 1 neuron 24; bias right of way -0.1; bias yield +0.3
+neural network,8,8,0.8645,0.8885,+0.0240,0.8648,0.8941,cut hidden 1 neuron 22; cut hidden 1 neuron 11; cut hidden 1 neuron 16; cut hidden 1 neuron 19; bias right of way +0.05
+neural network,9,9,0.9077,0.9109,+0.0032,0.9035,0.9159,cut hidden 1 neuron 22; cut hidden 1 neuron 14; bias left turn +0.15; bias right of way +0.25; bias stop sign -0.1; bias yield -0.05
+neural network,10,10,0.8742,0.8904,+0.0162,0.8766,0.8900,cut hidden 1 neuron 29; cut hidden 1 neuron 26; cut hidden 1 neuron 3
+neural network,11,11,0.8994,0.9032,+0.0038,0.8960,0.9040,cut hidden 1 neuron 17; bias right of way +0.15
+neural network,12,12,0.8945,0.9038,+0.0093,0.8885,0.9077,cut hidden 1 neuron 14; cut hidden 1 neuron 9; cut hidden 1 neuron 21; cut hidden 1 neuron 8; cut hidden 1 neuron 19; cut hidden 1 neuron 23; cut hidden 1 neuron 30; cut hidden 1 neuron 6; bias left turn -0.05; bias right of way +0.25; bias stop sign +0.15
+neural network,13,13,0.8788,0.9051,+0.0263,0.8808,0.9108,cut hidden 1 neuron 22; bias left turn -0.15; bias right of way +0.15; bias right turn +0.05; bias stop sign -1.6
+neural network,14,14,0.8846,0.8945,+0.0099,0.8829,0.9016,cut hidden 1 neuron 17; cut hidden 1 neuron 3; cut hidden 1 neuron 0; bias left turn +0.65; bias right of way +0.2; bias right turn +0.05; bias stop sign +0.35; bias yield -0.05
+neural network,15,15,0.8665,0.9021,+0.0356,0.8672,0.9014,cut hidden 1 neuron 24; cut hidden 1 neuron 11; cut hidden 1 neuron 16; cut hidden 1 neuron 25; cut hidden 1 neuron 30; cut hidden 1 neuron 23; bias right of way +1.5; bias stop sign -0.1; bias yield +0.6
+neural network,16,16,0.8955,0.9000,+0.0045,0.8982,0.9089,cut hidden 1 neuron 15; cut hidden 1 neuron 25; bias right of way +0.75; bias stop sign +0.15; bias yield -0.05
+neural network,17,17,0.8794,0.8920,+0.0126,0.8810,0.8946,cut hidden 1 neuron 11; cut hidden 1 neuron 16; bias left turn +0.5; bias right of way +1.8; bias right turn -0.8
+neural network,18,18,0.8708,0.8913,+0.0205,0.8820,0.9057,cut hidden 1 neuron 9; cut hidden 1 neuron 4; cut hidden 1 neuron 10; cut hidden 1 neuron 1; cut hidden 1 neuron 14; bias right of way +0.5
+neural network,19,19,0.8822,0.8974,+0.0152,0.8834,0.9048,cut hidden 1 neuron 24; cut hidden 1 neuron 7; cut hidden 1 neuron 14; cut hidden 1 neuron 12; cut hidden 1 neuron 26; bias right of way +0.2
+neural network,20,20,0.9006,0.9003,-0.0003,0.9072,0.9101,cut hidden 1 neuron 14; bias left turn +0.05; bias right of way +0.15; bias stop sign +0.05
+neural network,21,21,0.9056,0.9112,+0.0056,0.8953,0.9123,cut hidden 1 neuron 6; cut hidden 1 neuron 10; cut hidden 1 neuron 3; cut hidden 1 neuron 4; bias left turn +0.05; bias right of way -0.25
+neural network,22,22,0.8925,0.9007,+0.0082,0.8994,0.9123,cut hidden 1 neuron 19; bias left turn +0.05; bias right of way +0.05; bias stop sign +0.55
+neural network,23,23,0.9095,0.9159,+0.0064,0.9038,0.9137,cut hidden 1 neuron 17; cut hidden 1 neuron 22; cut hidden 1 neuron 20; cut hidden 1 neuron 10; bias left turn +0.1; bias right of way -0.1; bias stop sign +0.4; bias yield -0.1
+neural network,24,24,0.8848,0.9046,+0.0198,0.8866,0.9094,cut hidden 1 neuron 20; cut hidden 1 neuron 2; bias right of way +0.45; bias stop sign +0.05; bias yield -0.1
+neural network,25,25,0.8901,0.9128,+0.0227,0.8892,0.9140,cut hidden 1 neuron 16; cut hidden 1 neuron 6; bias left turn -0.05; bias right of way +0.25; bias stop sign +0.05
+neural network,26,26,0.9049,0.9129,+0.0080,0.9006,0.9115,cut hidden 1 neuron 16; cut hidden 1 neuron 17; cut hidden 1 neuron 25; bias left turn -0.05
+neural network,27,27,0.8938,0.9128,+0.0190,0.8878,0.9106,cut hidden 1 neuron 29; cut hidden 1 neuron 5; bias left turn -0.1; bias right of way -0.1; bias right turn -0.1; bias yield +0.3
+neural network,28,28,0.8990,0.8988,-0.0002,0.8982,0.9033,cut hidden 1 neuron 7; cut hidden 1 neuron 0; bias right of way +0.2; bias stop sign -0.05; bias yield -0.1
+neural network,29,29,0.8918,0.8952,+0.0034,0.8837,0.8936,cut hidden 1 neuron 10; cut hidden 1 neuron 17; cut hidden 1 neuron 29; cut hidden 1 neuron 24
+neural network,30,30,0.8676,0.8933,+0.0257,0.8691,0.8917,cut hidden 1 neuron 14; cut hidden 1 neuron 23; cut hidden 1 neuron 19; bias left turn -0.5; bias right of way +0.25; bias right turn +0.25; bias stop sign -0.15
+neural network,31,31,0.8916,0.9071,+0.0155,0.8938,0.9057,cut hidden 1 neuron 11; bias left turn -0.25; bias right of way +1.5; bias stop sign -0.1; bias yield +0.05
+neural network,32,32,0.8665,0.8818,+0.0153,0.8711,0.8878,cut hidden 1 neuron 0; cut hidden 1 neuron 24; cut hidden 1 neuron 3; cut hidden 1 neuron 2; bias left turn +0.1
+neural network,33,33,0.9038,0.9210,+0.0172,0.8934,0.9125,cut hidden 1 neuron 20; cut hidden 1 neuron 13; cut hidden 1 neuron 23; bias right of way -0.55; bias stop sign -0.1
+neural network,34,34,0.8771,0.9015,+0.0244,0.8786,0.9038,cut hidden 1 neuron 25; cut hidden 1 neuron 20; cut hidden 1 neuron 7; cut hidden 1 neuron 28; bias left turn -0.15; bias right of way +2.8; bias right turn +0.05
+neural network,35,35,0.8830,0.8954,+0.0124,0.8728,0.8958,cut hidden 1 neuron 2; cut hidden 1 neuron 1; cut hidden 1 neuron 7; cut hidden 1 neuron 4; bias left turn -0.5; bias right of way +0.45; bias right turn +0.25; bias stop sign +0.25; bias yield -0.05
+neural network,36,36,0.8875,0.8935,+0.0060,0.8888,0.9067,cut hidden 1 neuron 2; cut hidden 1 neuron 4; cut hidden 1 neuron 22; bias right of way +0.05; bias stop sign +0.05
+neural network,37,37,0.8752,0.9022,+0.0270,0.8645,0.9001,cut hidden 1 neuron 31; cut hidden 1 neuron 21; cut hidden 1 neuron 16; bias stop sign +0.15; bias yield -0.05
+neural network,38,38,0.8844,0.8873,+0.0029,0.8839,0.8938,cut hidden 1 neuron 11; cut hidden 1 neuron 0; cut hidden 1 neuron 13; bias right of way +0.3; bias stop sign -0.05
+neural network,39,39,0.8924,0.9078,+0.0154,0.8905,0.9103,cut hidden 1 neuron 7; cut hidden 1 neuron 11; cut hidden 1 neuron 28; bias right of way +1.2; bias stop sign +0.1
+neural network,40,40,0.8855,0.9009,+0.0154,0.8955,0.9086,cut hidden 1 neuron 10; cut hidden 1 neuron 25; bias left turn -0.05; bias stop sign +0.35; bias yield +0.05
+neural network,41,41,0.8693,0.8926,+0.0233,0.8645,0.8968,cut hidden 1 neuron 10; cut hidden 1 neuron 3; cut hidden 1 neuron 26; cut hidden 1 neuron 4; bias left turn +0.05
+neural network,42,42,0.8696,0.8926,+0.0230,0.8657,0.9060,cut hidden 1 neuron 27; cut hidden 1 neuron 12; cut hidden 1 neuron 21; cut hidden 1 neuron 29; cut hidden 1 neuron 17; bias stop sign +0.25; bias yield -0.15
+neural network,43,43,0.8936,0.9051,+0.0115,0.8919,0.9069,cut hidden 1 neuron 4; cut hidden 1 neuron 1; cut hidden 1 neuron 26; bias right of way +0.9; bias stop sign +0.1
+neural network,44,44,0.8982,0.9040,+0.0058,0.9081,0.9142,cut hidden 1 neuron 24; cut hidden 1 neuron 13; cut hidden 1 neuron 11; cut hidden 1 neuron 23; bias left turn +0.1; bias right of way +0.05
+neural network,45,45,0.8774,0.8996,+0.0222,0.8776,0.8972,cut hidden 1 neuron 30; cut hidden 1 neuron 29; cut hidden 1 neuron 26; bias left turn -0.05; bias right of way +0.25; bias stop sign +0.05
+neural network,46,46,0.8960,0.9038,+0.0078,0.8994,0.9084,cut hidden 1 neuron 6; cut hidden 1 neuron 12; cut hidden 1 neuron 14; bias left turn -0.05
+neural network,47,47,0.8979,0.9048,+0.0069,0.9055,0.9140,cut hidden 1 neuron 27; cut hidden 1 neuron 10; cut hidden 1 neuron 13; cut hidden 1 neuron 28; bias right of way +0.3; bias stop sign +0.1
+neural network,48,48,0.8856,0.9059,+0.0203,0.8980,0.9205,cut hidden 1 neuron 22; cut hidden 1 neuron 30; cut hidden 1 neuron 17; bias left turn -0.05; bias right of way +0.85; bias stop sign -0.15
+neural network,49,49,0.8989,0.8971,-0.0018,0.8953,0.9077,cut hidden 1 neuron 2; cut hidden 1 neuron 9; cut hidden 1 neuron 30; bias right of way +0.1; bias stop sign -0.05; bias yield -0.05
+neural network,50,50,0.8740,0.8794,+0.0054,0.8720,0.8810,cut hidden 1 neuron 4; bias left turn +0.05; bias right turn -0.05; bias stop sign +1.15
+neural network,51,51,0.8773,0.8930,+0.0157,0.8812,0.8968,cut hidden 1 neuron 13; cut hidden 1 neuron 2; bias left turn +0.5; bias right of way +0.8; bias right turn -0.1; bias stop sign -0.05
+neural network,52,52,0.8912,0.9100,+0.0188,0.9016,0.9190,cut hidden 1 neuron 0; cut hidden 1 neuron 27; bias left turn -0.05; bias right of way -0.25; bias stop sign +0.85; bias yield -0.3
+neural network,53,53,0.9147,0.9164,+0.0017,0.9077,0.9144,cut hidden 1 neuron 9; cut hidden 1 neuron 20; cut hidden 1 neuron 21; bias right of way +0.4
+neural network,54,54,0.8929,0.9052,+0.0123,0.8955,0.9074,cut hidden 1 neuron 13; bias left turn +0.05; bias right of way -0.15; bias stop sign +0.35; bias yield -0.15
+neural network,55,55,0.8852,0.8926,+0.0074,0.8890,0.9035,cut hidden 1 neuron 17; cut hidden 1 neuron 23; bias left turn +0.05; bias right of way +0.15
+neural network,56,56,0.8950,0.9120,+0.0170,0.8941,0.9084,cut hidden 1 neuron 15; cut hidden 1 neuron 27; cut hidden 1 neuron 28; bias right of way +1.75; bias stop sign -0.3; bias yield -1
+neural network,57,57,0.8948,0.9042,+0.0094,0.9023,0.9137,cut hidden 1 neuron 0; bias left turn -0.35; bias right of way +0.4
+neural network,58,58,0.8832,0.8998,+0.0166,0.8895,0.9089,cut hidden 1 neuron 31; cut hidden 1 neuron 14; cut hidden 1 neuron 9
+neural network,59,59,0.9003,0.9002,-0.0001,0.8890,0.9035,cut hidden 1 neuron 21; cut hidden 1 neuron 15; cut hidden 1 neuron 5; bias right of way +1.2
+neural network,60,60,0.8727,0.9076,+0.0349,0.8628,0.9081,cut hidden 1 neuron 26; cut hidden 1 neuron 7; cut hidden 1 neuron 17; bias right of way -0.8; bias stop sign -0.7; bias yield +0.25
+neural network,61,61,0.8864,0.9095,+0.0231,0.8788,0.9035,cut hidden 1 neuron 20; cut hidden 1 neuron 29; cut hidden 1 neuron 24; bias right of way +0.3; bias stop sign +0.15
+neural network,62,62,0.9041,0.9091,+0.0050,0.9050,0.9115,cut hidden 1 neuron 19; cut hidden 1 neuron 7; cut hidden 1 neuron 28; cut hidden 1 neuron 31; cut hidden 1 neuron 18; bias left turn +0.05; bias stop sign +0.05; bias yield -0.05
+neural network,63,63,0.8816,0.8936,+0.0120,0.8837,0.9040,cut hidden 1 neuron 15; cut hidden 1 neuron 28; bias right of way +0.9
+neural network,64,64,0.8942,0.9017,+0.0075,0.8875,0.9028,cut hidden 1 neuron 31; cut hidden 1 neuron 17; cut hidden 1 neuron 6; bias left turn +0.05
+neural network,65,65,0.8956,0.9076,+0.0120,0.8948,0.9125,cut hidden 1 neuron 7; cut hidden 1 neuron 20; cut hidden 1 neuron 10; bias left turn +0.1; bias right of way +0.95; bias yield -0.15
+neural network,66,66,0.9011,0.9071,+0.0060,0.9006,0.9120,cut hidden 1 neuron 2; cut hidden 1 neuron 21; bias right of way +0.05; bias stop sign -0.05
+neural network,67,67,0.8997,0.9008,+0.0011,0.9026,0.9115,cut hidden 1 neuron 19; cut hidden 1 neuron 4; bias stop sign +0.3
+neural network,68,68,0.8804,0.8938,+0.0134,0.8769,0.8963,cut hidden 1 neuron 29; cut hidden 1 neuron 16; bias right of way +0.1; bias stop sign -0.05
+neural network,69,69,0.8847,0.9015,+0.0168,0.8827,0.9026,cut hidden 1 neuron 14; cut hidden 1 neuron 4; cut hidden 1 neuron 20; cut hidden 1 neuron 3; cut hidden 1 neuron 11; cut hidden 1 neuron 17; cut hidden 1 neuron 29; bias left turn -0.15; bias right of way -0.1; bias right turn +0.05; bias yield -0.05
+neural network,70,70,0.8935,0.8999,+0.0064,0.8984,0.9057,cut hidden 1 neuron 14; bias left turn -0.1; bias right turn +0.05; bias stop sign +0.1; bias yield -0.15
+neural network,71,71,0.8935,0.9081,+0.0146,0.8900,0.9079,cut hidden 1 neuron 19; cut hidden 1 neuron 26; cut hidden 1 neuron 13; bias stop sign +0.05
+neural network,72,72,0.8935,0.8967,+0.0032,0.9033,0.9123,cut hidden 1 neuron 29; cut hidden 1 neuron 25; cut hidden 1 neuron 13; cut hidden 1 neuron 31; bias right of way -0.55; bias stop sign +0.1
+neural network,73,73,0.8878,0.9057,+0.0179,0.8810,0.9055,cut hidden 1 neuron 4; cut hidden 1 neuron 5; cut hidden 1 neuron 6; cut hidden 1 neuron 18; bias left turn -0.35; bias right of way +0.15; bias right turn -0.05
+neural network,74,74,0.8791,0.9007,+0.0216,0.8866,0.9094,cut hidden 1 neuron 15; cut hidden 1 neuron 27; cut hidden 1 neuron 3; cut hidden 1 neuron 22; cut hidden 1 neuron 28; bias left turn -0.3; bias right of way +0.45; bias stop sign +0.1; bias yield -0.25
+neural network,75,75,0.8569,0.8919,+0.0350,0.8652,0.8963,cut hidden 1 neuron 0; cut hidden 1 neuron 5; cut hidden 1 neuron 16; bias left turn -0.35; bias right of way +0.35; bias right turn +0.15; bias stop sign -0.05
+neural network,76,76,0.8886,0.9059,+0.0173,0.8822,0.9033,cut hidden 1 neuron 13; cut hidden 1 neuron 12; cut hidden 1 neuron 14; cut hidden 1 neuron 11; bias left turn +0.05; bias right of way +1.6; bias stop sign +0.15
+neural network,77,77,0.8807,0.8879,+0.0072,0.8788,0.9018,cut hidden 1 neuron 4; cut hidden 1 neuron 0; cut hidden 1 neuron 11; cut hidden 1 neuron 8; cut hidden 1 neuron 12; bias left turn -0.05; bias right of way -0.25; bias right turn -0.05; bias stop sign -0.3; bias yield +0.05
+neural network,78,78,0.9030,0.9101,+0.0071,0.8921,0.9072,cut hidden 1 neuron 26; cut hidden 1 neuron 29; cut hidden 1 neuron 11; bias right of way +1; bias stop sign +0.75; bias yield -0.15
+neural network,79,79,0.8420,0.8745,+0.0325,0.8425,0.8752,cut hidden 1 neuron 3; cut hidden 1 neuron 25; cut hidden 1 neuron 21; cut hidden 1 neuron 9; bias left turn -0.15; bias right of way +1.25; bias right turn +0.05; bias stop sign -0.55; bias yield -0.15
+neural network,80,80,0.8963,0.9068,+0.0105,0.9011,0.9147,cut hidden 1 neuron 10; cut hidden 1 neuron 23; cut hidden 1 neuron 25; cut hidden 1 neuron 4; cut hidden 1 neuron 28; bias left turn +0.05; bias right of way -0.15; bias stop sign -0.05
+neural network,81,81,0.8860,0.9066,+0.0206,0.8946,0.9154,cut hidden 1 neuron 27; cut hidden 1 neuron 25; bias left turn +0.05; bias right of way +0.9
+neural network,82,82,0.8948,0.9083,+0.0135,0.9026,0.9169,cut hidden 1 neuron 10; cut hidden 1 neuron 12; cut hidden 1 neuron 14; cut hidden 1 neuron 31; bias left turn +0.05; bias stop sign -0.15; bias yield +0.4
+neural network,83,83,0.8901,0.9039,+0.0138,0.8953,0.9043,cut hidden 1 neuron 26; cut hidden 1 neuron 5; cut hidden 1 neuron 13; cut hidden 1 neuron 3; cut hidden 1 neuron 7; bias right of way -0.05; bias stop sign -0.1; bias yield +1
+neural network,84,84,0.8928,0.9034,+0.0106,0.8883,0.9045,cut hidden 1 neuron 27; cut hidden 1 neuron 9; bias left turn +0.05; bias right of way +0.9; bias stop sign +0.2; bias yield -0.05
+neural network,85,85,0.8948,0.9062,+0.0114,0.8972,0.9135,cut hidden 1 neuron 27; cut hidden 1 neuron 21; bias left turn +0.05; bias right of way -0.2; bias stop sign -0.1; bias yield +0.1
+neural network,86,86,0.8973,0.9009,+0.0036,0.9021,0.9091,cut hidden 1 neuron 22; cut hidden 1 neuron 23; cut hidden 1 neuron 27; cut hidden 1 neuron 21
+neural network,87,87,0.9022,0.9089,+0.0067,0.9132,0.9174,cut hidden 1 neuron 15; cut hidden 1 neuron 30; cut hidden 1 neuron 19; bias right of way +0.05
+neural network,88,88,0.9049,0.9075,+0.0026,0.8931,0.9018,cut hidden 1 neuron 4; cut hidden 1 neuron 14; cut hidden 1 neuron 1; bias left turn +0.1; bias right of way +0.05; bias yield -0.05
+neural network,89,89,0.9062,0.9068,+0.0006,0.9064,0.9123,cut hidden 1 neuron 13; cut hidden 1 neuron 23; cut hidden 1 neuron 19; bias left turn +0.05; bias right of way +0.05; bias right turn -0.05; bias stop sign -0.05
+neural network,90,90,0.8829,0.8995,+0.0166,0.8791,0.9004,cut hidden 1 neuron 29; cut hidden 1 neuron 1; cut hidden 1 neuron 12; bias stop sign +0.25
+neural network,91,91,0.8950,0.9014,+0.0064,0.8856,0.9035,cut hidden 1 neuron 1; cut hidden 1 neuron 15; bias left turn +0.15; bias right of way +0.7; bias right turn -0.05; bias stop sign +0.55
+neural network,92,92,0.9016,0.9119,+0.0103,0.8924,0.9021,cut hidden 1 neuron 7; cut hidden 1 neuron 18; cut hidden 1 neuron 26; cut hidden 1 neuron 10; bias right of way -0.05; bias stop sign -0.5; bias yield +0.35
+neural network,93,93,0.9005,0.9097,+0.0092,0.8975,0.9106,cut hidden 1 neuron 21; cut hidden 1 neuron 25; cut hidden 1 neuron 20; cut hidden 1 neuron 12; bias left turn -0.05; bias right of way +0.9; bias stop sign +0.05; bias yield -0.05
+neural network,94,94,0.9059,0.9201,+0.0142,0.9060,0.9193,cut hidden 1 neuron 22; cut hidden 1 neuron 5; bias right of way +0.1; bias stop sign +0.1
+neural network,95,95,0.8615,0.8890,+0.0275,0.8626,0.8960,cut hidden 1 neuron 29; cut hidden 1 neuron 31; bias left turn -0.65; bias right of way +0.15; bias right turn +0.05; bias stop sign +0.05; bias yield -0.05
+neural network,96,96,0.8580,0.8775,+0.0195,0.8623,0.8873,cut hidden 1 neuron 22; cut hidden 1 neuron 15; cut hidden 1 neuron 23; bias left turn +0.55; bias stop sign +0.05
+neural network,97,97,0.8833,0.8997,+0.0164,0.8815,0.9033,cut hidden 1 neuron 3; cut hidden 1 neuron 20; cut hidden 1 neuron 1; cut hidden 1 neuron 22; bias left turn -0.05; bias right of way -0.3; bias stop sign -0.3; bias yield -0.25
+neural network,98,98,0.8886,0.8961,+0.0075,0.8931,0.9033,cut hidden 1 neuron 1; cut hidden 1 neuron 7; bias stop sign -0.15; bias yield +0.05
+neural network,99,99,0.8884,0.9123,+0.0239,0.8907,0.9140,cut hidden 1 neuron 11; cut hidden 1 neuron 28; cut hidden 1 neuron 6; bias stop sign -0.35; bias yield +0.05
+neural network,100,100,0.8968,0.9085,+0.0117,0.8938,0.9098,cut hidden 1 neuron 24; cut hidden 1 neuron 21; bias left turn +0.6; bias right turn -0.1; bias stop sign -0.05
+neural network,mean,,0.8887,0.9017,+0.0130,,,
+neural network,standard deviation,,0.0128,0.0087,+0.0083,,,
+neural network,min,,0.8420,0.8745,-0.0018,,,
+neural network,max,,0.9147,0.9210,+0.0356,,,
