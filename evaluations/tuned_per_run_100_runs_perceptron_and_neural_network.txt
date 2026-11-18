@@ -1,0 +1,13 @@
+tuned_per_run_100_runs_perceptron_and_neural_network.csv  (--runs 100 --perceptron --tune, --runs 100 --nn --tune)
+Every run (seed 1..100): 70 % training / 30 % test split. 20 % of the training data is held back as validation.
+A new model is trained from scratch on the other 80 %, then WeightTuner changes its weights using only the
+validation data, and both versions are tested on the run's test data.
+- untuned / tuned test accuracy: the run's model before / after tuning, on the test data
+- untuned / tuned validation accuracy: the same on the validation data the tuning was done on
+- changes: what the tuner did in that run
+  neural network: "cut hidden 1 neuron n" = output weights of that neuron set to 0 (its average activation moved
+                  into the output biases), "bias <concept>" = output bias shift
+  perceptron: "arrow pattern xN" = mirror-antisymmetric left-minus-right grid pattern added to "left turn" and
+              subtracted from "right turn", "lettering xN" = "horizontal line 5 switches" + on stop sign, - on yield,
+              "bias <concept>" = bias shift
+The summary rows per method (mean, standard deviation, min, max) are at the end of each method's block.

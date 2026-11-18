@@ -111,6 +111,9 @@ public class NeuralNetwork : IClassifier
     // Probability for each class
     public double[] Predict(double[] input) => Forward(input)[^1];
 
+    // What the output layer gets: the activations of the last hidden layer (the input without hidden layers)
+    public double[] LastHiddenActivations(double[] input) => Forward(input)[^2];
+
     public int Classify(double[] input)
     {
         double[] output = Predict(input);

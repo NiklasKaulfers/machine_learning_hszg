@@ -8,6 +8,9 @@ using uni_machine_learning_cs.MachineLearning;
 //                                    (if there is no saved model yet, it is trained first)
 //   --runs <n> <method>           -> train and test the method n times with different random training / test
 //                                    splits, print every run's test accuracy and save them to evaluations/
+//   --runs <n> <method> --tune    -> (--nn / --perceptron) every run trains from scratch on its split, but keeps
+//                                    20 % of the training data back. The weights are then tuned on that part
+//                                    (see WeightTuner) and the test accuracy before and after is saved
 //   --runs <n> <method> --weights -> don't train: test the saved model (with the weights from its _weights.json
 //                                    applied, see below) on the test data of the same n splits. Shows how good
 //                                    weights edited by hand are, run by run comparable with --runs without it
@@ -52,7 +55,7 @@ string outputFile = Path.Combine(projectRoot, "image_data.json");
 string modelFolder = Path.Combine(projectRoot, "models");
 
 string[] options = ["--train", "--runs", "--sweep", "--values", "--binary", "--nn", "--knn", "--tree", "--gates",
-    "--perceptron", "--ovr", "--pocket", "--weights"];
+    "--perceptron", "--ovr", "--pocket", "--weights", "--tune"];
 string? unknownOption = args.FirstOrDefault(arg => arg.StartsWith("--") && !options.Contains(arg));
 if (unknownOption != null)
 {
@@ -95,6 +98,7 @@ if (valuesIndex >= 0)
 bool train = args.Contains("--train");
 bool binary = args.Contains("--binary");
 bool savedWeights = args.Contains("--weights");
+bool tune = args.Contains("--tune");
 PerceptronSettings perceptron = new PerceptronSettings(
     args.Contains("--ovr") ? PerceptronRule.OneVsRest : PerceptronRule.MultiClass, args.Contains("--pocket"));
 LearningMethod method = args.Contains("--perceptron") ? LearningMethod.Perceptron
@@ -152,6 +156,30 @@ if (runs > 0)
 {
     if (!File.Exists(outputFile))
         WriteFeatureFile();
+
+    var culture = System.Globalization.CultureInfo.InvariantCulture;
+    if (tune)
+    {
+        if (method is not (LearningMethod.NeuralNetwork or LearningMethod.Perceptron))
+        {
+            Console.WriteLine("--tune only works with --nn or --perceptron.");
+            return 1;
+        }
+        var tuned = ModelTrainer.TuneRepeated(outputFile, method, runs, binary, perceptron);
+        string tuneFolder = Path.Combine(projectRoot, "evaluations");
+        string tuneFile = Path.Combine(tuneFolder,
+            $"{Path.GetFileNameWithoutExtension(modelFile)}_tuned_{runs}_runs_{DateTime.Now:yyyy-MM-dd_HH-mm}.csv");
+        Directory.CreateDirectory(tuneFolder);
+        File.WriteAllLines(tuneFile, [
+            "run,seed,untuned test accuracy,tuned test accuracy,untuned validation accuracy," +
+            "tuned validation accuracy,changes",
+            ..tuned.Select((run, i) => string.Join(",", (i + 1).ToString(culture), run.Seed.ToString(culture),
+                run.TestUntuned.ToString("F4", culture), run.TestTuned.ToString("F4", culture),
+                run.ValidationUntuned.ToString("F4", culture), run.ValidationTuned.ToString("F4", culture),
+                $"\"{run.Changes}\""))]);
+        Console.WriteLine($"Saved the results to {tuneFile}");
+        return 0;
+    }
 
     List<double> accuracies;
     if (savedWeights)
