@@ -2,8 +2,9 @@
 
 A C# console application that classifies images of traffic signs. It extracts a feature vector from every image,
 trains one of five learning methods on those vectors, saves the trained model and then classifies new images.
-It can also train a method many times to measure how stable its accuracy is, or sweep a complexity setting
-(like the number of hidden layers or k) to see how it changes the accuracy.
+It can also train a method many times to measure how stable its accuracy is, sweep a complexity setting
+(like the number of hidden layers or k) to see how it changes the accuracy, or test hand-edited network weights
+on the same splits.
 
 ## Contents
 
@@ -30,16 +31,22 @@ It can also train a method many times to measure how stable its accuracy is, or 
 
 ```
 uni_machine_learning_cs.sln
+Agents.md                          instructions for coding agents working on the repository
+results.numbers                    charts of earlier large runs
 uni_machine_learning_cs/           the project
   Program.cs                       command line handling, training and classification
+  Colors.cs                        the traffic sign colours used by the colour presence features
   ImageAnalysis/ReadImageFile.cs   reads BMP / JPEG images
   MachineLearning/
     FeatureExtractor.cs            turns an image into its feature vector
+    FeatureFile.cs                 the format of image_data.json
     ModelTrainer.cs                splits the data, trains and evaluates a method, runs and sweeps
     TrainedModel.cs                a trained classifier that can be saved, loaded and used
     NeuralNetwork.cs, KNearestNeighbors.cs, DecisionTree.cs,
     LogicGateNetwork.cs, Perceptron.cs
+    IClassifier.cs                 the interface every learning method implements
     NetworkWeightsFile.cs          the editable weights JSON of a network / perceptron
+    BinaryExtensions.cs            helpers to write / read arrays in model files
   RightTurn/, StopSign/, ...       the training images, one folder per concept
 image_data.json                    the extracted feature vectors (generated)
 models/                            trained models (generated)
@@ -80,13 +87,14 @@ dotnet run -- <options> [<image> ...]
 Without any options the program asks which learning method to use, trains it if no model is saved yet, and then
 asks for images to classify one at a time. Press Enter on an empty line to quit.
 
-There are three modes:
+There are these modes:
 
 | Mode                             | What it does                                                                                       |
 |----------------------------------|----------------------------------------------------------------------------------------------------|
 | `<method> [<image> ...]`         | Loads the saved model of the method (trains it first if there is none) and classifies images       |
 | `--train <method> [<image> ...]` | Extracts the features of all images again, trains the method, saves the model, then classifies     |
 | `--runs <n> <method>`            | Trains and tests the method n times with different random splits, saves the accuracies to a CSV    |
+| `--runs <n> <method> --weights`  | Trains nothing: tests the saved model, with its edited weights, on the test data of the same n splits |
 | `--sweep <n> <method>`           | Like `--runs`, but repeated for several complexity values of the method, saves one CSV             |
 
 ## Learning methods
@@ -124,6 +132,7 @@ The model name is `perceptron_multiclass`, `perceptron_one_vs_rest`, `perceptron
 | `--runs <n>`             | Train and test n times with random splits (seeds 1..n), write the accuracies to `evaluations/`              |
 | `--sweep <n>`            | Run n times for every complexity value, write the accuracies per value to `evaluations/`                   |
 | `--values 1,2,3`         | The complexity values to try with `--sweep` (comma separated, no spaces). Defaults are used without it     |
+| `--weights`              | With `--runs`: test the saved `--nn` / `--perceptron` model with its `_weights.json` instead of training |
 | `--binary`               | Turn every feature into yes/no before training: 1 if above its average in the training images, else 0      |
 | `--ovr`, `--pocket`      | Perceptron variants, see above                                                                             |
 | `<image> ...`            | Paths of images to classify. Without any, the program asks for them interactively                          |
@@ -152,6 +161,9 @@ dotnet run -- --train --perceptron --ovr --pocket
 
 # 100 runs of k-NN with different random splits, results go to evaluations/
 dotnet run -- --runs 100 --knn
+
+# Test the saved perceptron with hand-edited weights on the same 100 splits
+dotnet run -- --runs 100 --perceptron --weights
 
 # Sweep the number of hidden layers of the neural network, 5 runs per value
 dotnet run -- --sweep 5 --nn
@@ -185,6 +197,7 @@ All generated files are written to the folder that holds the `.sln` file.
 | `models/<model name>_weights.json`                    | training `--nn` / `--perceptron` | The bias and weights of every neuron, editable (see below)              |
 | `models/<model name>_circuit.txt`                     | training `--gates`               | Every gate of the finished circuit, layer by layer                      |
 | `evaluations/<model name>_<n>_runs_<date>.csv`        | `--runs`                         | One line per run: `run,seed,test accuracy`                              |
+| `evaluations/<model name>_weights_<n>_runs_<date>.csv`| `--runs --weights`               | Same format, accuracies of the saved model with its edited weights      |
 | `evaluations/<model name>_sweep_<n>_runs_<date>.csv`  | `--sweep`                        | One line per value: value, mean, standard deviation, min, max, every run |
 
 `image_data.json` is only extracted once; later runs reuse it. Use `--train` to extract it again, for example
@@ -243,6 +256,19 @@ changed, so neurons and weights that are left out keep their trained value. The 
 the method is trained with `--train`. A file that does not match the model, for example a weight for an unknown
 input, stops the program with an error.
 
+### Testing edited weights
+
+To see how good the edited weights are, run `--runs <n>` with `--weights` and the same method options as the
+model, for example `dotnet run -- --runs 100 --perceptron --pocket --weights`. Nothing is trained: the saved model
+is loaded, the weights file is applied, and the model is tested on the test data of the splits with seeds 1..n,
+the same splits that `--runs <n>` without `--weights` uses. That way the accuracies can be compared run by run with
+freshly trained models. The accuracy of every run and a confusion matrix summed over all runs are printed and saved
+to `evaluations/<model name>_weights_<n>_runs_<date>.csv`.
+
+This only works with the neural network and the perceptron, and needs a saved model (train one with `--train`
+first). Keep in mind that the saved model was trained on its own split (seed 50), so some of the test images of
+these runs were part of its training data, which makes the accuracies a bit too optimistic.
+
 ## How a run works
 
 1. **Feature extraction.** Every image is turned into a vector of numbers on all CPU cores. The features are the
@@ -292,6 +318,8 @@ Default values tried by `--sweep` when `--values` is not given:
   directory of the run configuration to the project folder.
 - **"Unknown option".** Check the spelling, every option starts with `--`. Remember the `--` after `dotnet run`.
 - **"--runs needs the number of runs".** The number must directly follow `--runs` or `--sweep`.
+- **"--weights needs a saved model" / "--weights only works with ...".** Train the model with `--train` first, and
+  use `--weights` only with `--nn` or `--perceptron`.
 - **"Could not apply the neuron weights".** The weights JSON does not match the model. Delete it or train again
   with `--train` to get a fresh file.
 - **"Could not classify ...".** The image path is wrong, or the BMP is compressed or not 24/32 bit.

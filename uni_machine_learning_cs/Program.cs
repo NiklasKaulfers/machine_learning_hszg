@@ -16,7 +16,8 @@ using uni_machine_learning_cs.MachineLearning;
 //                                    weights edited by hand are, run by run comparable with --runs without it
 //   --sweep <n> <method> [--values 1,2,3]
 //                                 -> like --runs, but repeated for several complexity values: the number of
-//                                    hidden layers (--nn), k (--knn) or the max depth (--tree). Saves the
+//                                    hidden layers (--nn), k (--knn), the max depth (--tree), the number of gate
+//                                    layers (--gates) or the number of epochs (--perceptron). Saves the
 //                                    accuracies per value to evaluations/ (without --values, defaults are used)
 // <method> is --nn (neural network), --knn (k-nearest neighbors), --tree (decision tree) or
 // --gates (logic gate network: every neuron learns to be one of the 16 two-input logic gates) or
