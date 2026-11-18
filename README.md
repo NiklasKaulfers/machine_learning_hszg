@@ -3,8 +3,8 @@
 A C# console application that classifies images of traffic signs. It extracts a feature vector from every image,
 trains one of five learning methods on those vectors, saves the trained model and then classifies new images.
 It can also train a method many times to measure how stable its accuracy is, sweep a complexity setting
-(like the number of hidden layers or k) to see how it changes the accuracy, or test hand-edited network weights
-on the same splits.
+(like the number of hidden layers or k) to see how it changes the accuracy, test hand-edited network weights
+on the same splits, or tune the weights of the neural network and the perceptron automatically.
 
 ## Contents
 
@@ -17,6 +17,7 @@ on the same splits.
 - [Examples](#examples)
 - [Output files](#output-files)
 - [Editing the weights of a network](#editing-the-weights-of-a-network)
+- [Tuning the weights automatically](#tuning-the-weights-automatically)
 - [How a run works](#how-a-run-works)
 - [Default settings](#default-settings)
 - [Troubleshooting](#troubleshooting)
@@ -46,6 +47,7 @@ uni_machine_learning_cs/           the project
     LogicGateNetwork.cs, Perceptron.cs
     IClassifier.cs                 the interface every learning method implements
     NetworkWeightsFile.cs          the editable weights JSON of a network / perceptron
+    WeightTuner.cs                 tunes trained network / perceptron weights on validation data (--tune)
     BinaryExtensions.cs            helpers to write / read arrays in model files
   RightTurn/, StopSign/, ...       the training images, one folder per concept
 image_data.json                    the extracted feature vectors (generated)
@@ -54,7 +56,8 @@ evaluations/                       results of --runs and --sweep as CSV (generat
 ```
 
 The generated files are written next to the `.sln` file, no matter where the program is started from.
-Images, models, evaluations and `image_data.json` are ignored by git.
+Images, models, evaluations and `image_data.json` are ignored by git. Selected evaluation results that are worth
+keeping (e.g. the tuning comparisons) are added to `evaluations/` on purpose with `git add -f`.
 
 ## Training data
 
@@ -94,6 +97,7 @@ There are these modes:
 | `<method> [<image> ...]`         | Loads the saved model of the method (trains it first if there is none) and classifies images       |
 | `--train <method> [<image> ...]` | Extracts the features of all images again, trains the method, saves the model, then classifies     |
 | `--runs <n> <method>`            | Trains and tests the method n times with different random splits, saves the accuracies to a CSV    |
+| `--runs <n> <method> --tune`     | Every run trains from scratch, tunes the weights on held-back data and tests before and after      |
 | `--runs <n> <method> --weights`  | Trains nothing: tests the saved model, with its edited weights, on the test data of the same n splits |
 | `--sweep <n> <method>`           | Like `--runs`, but repeated for several complexity values of the method, saves one CSV             |
 
@@ -132,6 +136,7 @@ The model name is `perceptron_multiclass`, `perceptron_one_vs_rest`, `perceptron
 | `--runs <n>`             | Train and test n times with random splits (seeds 1..n), write the accuracies to `evaluations/`              |
 | `--sweep <n>`            | Run n times for every complexity value, write the accuracies per value to `evaluations/`                   |
 | `--values 1,2,3`         | The complexity values to try with `--sweep` (comma separated, no spaces). Defaults are used without it     |
+| `--tune`                 | With `--runs`: tune every run's `--nn` / `--perceptron` model, see [Tuning](#tuning-the-weights-automatically) |
 | `--weights`              | With `--runs`: test the saved `--nn` / `--perceptron` model with its `_weights.json` instead of training |
 | `--binary`               | Turn every feature into yes/no before training: 1 if above its average in the training images, else 0      |
 | `--ovr`, `--pocket`      | Perceptron variants, see above                                                                             |
@@ -161,6 +166,9 @@ dotnet run -- --train --perceptron --ovr --pocket
 
 # 100 runs of k-NN with different random splits, results go to evaluations/
 dotnet run -- --runs 100 --knn
+
+# Tune the neural network automatically in 100 runs and compare before / after
+dotnet run -- --runs 100 --nn --tune
 
 # Test the saved perceptron with hand-edited weights on the same 100 splits
 dotnet run -- --runs 100 --perceptron --weights
@@ -197,6 +205,7 @@ All generated files are written to the folder that holds the `.sln` file.
 | `models/<model name>_weights.json`                    | training `--nn` / `--perceptron` | The bias and weights of every neuron, editable (see below)              |
 | `models/<model name>_circuit.txt`                     | training `--gates`               | Every gate of the finished circuit, layer by layer                      |
 | `evaluations/<model name>_<n>_runs_<date>.csv`        | `--runs`                         | One line per run: `run,seed,test accuracy`                              |
+| `evaluations/<model name>_tuned_<n>_runs_<date>.csv`  | `--runs --tune`                  | One line per run: test and validation accuracy before / after tuning, what was changed |
 | `evaluations/<model name>_weights_<n>_runs_<date>.csv`| `--runs --weights`               | Same format, accuracies of the saved model with its edited weights      |
 | `evaluations/<model name>_sweep_<n>_runs_<date>.csv`  | `--sweep`                        | One line per value: value, mean, standard deviation, min, max, every run |
 
@@ -269,6 +278,30 @@ This only works with the neural network and the perceptron, and needs a saved mo
 first). Keep in mind that the saved model was trained on its own split (seed 50), so some of the test images of
 these runs were part of its training data, which makes the accuracies a bit too optimistic.
 
+## Tuning the weights automatically
+
+`--runs <n> --nn --tune` or `--runs <n> --perceptron --tune` does automatically what was first done by hand in
+the weights file, but without looking at the test data. Every run (seeds 1..n, the same 70 % / 30 % splits as
+`--runs`) holds back 20 % of its training data as validation data, trains a new model from scratch on the other
+80 %, and then lets `WeightTuner` change the weights using only the validation data. The model before and after
+tuning is tested on the run's test data, which neither step has seen.
+
+What the tuner tries:
+
+- **Neural network** (only the output layer is changed): cut hidden neurons, i.e. set their output weights to 0
+  and move their average activation into the output biases, as long as a cut helps. Then shift the output biases.
+- **Perceptron:** add the mirror-antisymmetric left-minus-right arrow pattern of the grid cells to "left turn"
+  and subtract it from "right turn"; add the STOP lettering feature (`horizontal line 5 switches`) to "stop sign"
+  and subtract it from "yield"; then shift the biases. Every strength is tried and the best one is kept.
+
+A change is only kept if it gets more validation vectors right, and everything is undone if the total gain is
+below 0.1 %. Every run prints the test and validation accuracy before → after and what was changed, followed by
+the mean before and after and in how many runs tuning helped or hurt. The results are saved to
+`evaluations/<model name>_tuned_<n>_runs_<date>.csv`. The tuned weights are not saved as a model.
+
+`evaluations/tuned_per_run_100_runs_perceptron_and_neural_network.csv` holds the results of 100 runs of both
+methods, the `.txt` file next to it explains the columns.
+
 ## How a run works
 
 1. **Feature extraction.** Every image is turned into a vector of numbers on all CPU cores. The features are the
@@ -320,6 +353,7 @@ Default values tried by `--sweep` when `--values` is not given:
 - **"--runs needs the number of runs".** The number must directly follow `--runs` or `--sweep`.
 - **"--weights needs a saved model" / "--weights only works with ...".** Train the model with `--train` first, and
   use `--weights` only with `--nn` or `--perceptron`.
+- **"--tune only works with --nn or --perceptron".** The other methods have no weights to tune.
 - **"Could not apply the neuron weights".** The weights JSON does not match the model. Delete it or train again
   with `--train` to get a fresh file.
 - **"Could not classify ...".** The image path is wrong, or the BMP is compressed or not 24/32 bit.
