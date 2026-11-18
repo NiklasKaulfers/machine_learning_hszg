@@ -25,6 +25,9 @@ public static class ModelTrainer
 {
     // Share of the images used for training, the rest is test data
     private const double TrainingShare = 0.7;
+
+    // TuneRepeated: share of the training data held back to tune the weights on (the model never trains on it)
+    private const double ValidationShare = 0.2;
     private const int Seed = 50;
 
     // Neural network: HiddenLayers hidden layers with HiddenNeurons neurons each
@@ -188,6 +191,57 @@ public static class ModelTrainer
                           $"min {accuracies.Min():P2}, max {accuracies.Max():P2}");
     }
 
+    // One run of TuneRepeated: test accuracy before and after tuning, validation accuracy before and after,
+    // and what the tuner changed
+    public record TuningRun(int Seed, double TestUntuned, double TestTuned, double ValidationUntuned,
+        double ValidationTuned, string Changes);
+
+    // Every run trains a new model from scratch on its own split (seed 1, 2, ...), but holds back
+    // ValidationShare of the training data. WeightTuner then changes the trained weights using only that
+    // held-back data, and both versions are tested on the run's test data, which neither step has seen.
+    // Only for the neural network and the perceptron
+    public static List<TuningRun> TuneRepeated(string jsonPath, LearningMethod method, int runs, bool binary,
+        PerceptronSettings? perceptron = null)
+    {
+        if (method is not (LearningMethod.NeuralNetwork or LearningMethod.Perceptron))
+            throw new ArgumentException("Only the neural network and the perceptron can be tuned.", nameof(method));
+        perceptron ??= new PerceptronSettings();
+        var (concepts, samples) = Load(jsonPath);
+        Console.WriteLine($"Learning method: {method}, {runs} runs: train from scratch, tune on " +
+                          $"{ValidationShare:P0} of the training data, test both");
+
+        List<TuningRun> results = Enumerable.Range(1, runs)
+            .AsParallel()
+            .AsOrdered()
+            .Select(run =>
+            {
+                TrainingResult result = Train(concepts, samples, method, run, TextWriter.Null,
+                    DefaultComplexity(method), binary, perceptron, ValidationShare);
+                List<(double[] Input, int Class)> validation = result.Validation;
+                double validationUntuned = Accuracy(result.Classifier, validation);
+
+                string changes = result.Classifier switch
+                {
+                    NeuralNetwork network => WeightTuner.Tune(network, validation, concepts),
+                    Perceptron single => WeightTuner.Tune(single, result.Training, validation, concepts),
+                    _ => "",
+                };
+
+                return new TuningRun(run, result.Model.testAccuracy, Accuracy(result.Classifier, result.Test),
+                    validationUntuned, Accuracy(result.Classifier, validation), changes);
+            })
+            .ToList();
+
+        foreach (TuningRun run in results)
+            Console.WriteLine($"Run {run.Seed,3}: test accuracy {run.TestUntuned:P2} -> {run.TestTuned:P2} " +
+                              $"(validation {run.ValidationUntuned:P2} -> {run.ValidationTuned:P2}) {run.Changes}");
+        Console.WriteLine($"Untuned: mean {results.Average(r => r.TestUntuned):P2}, " +
+                          $"tuned: mean {results.Average(r => r.TestTuned):P2}, " +
+                          $"better in {results.Count(r => r.TestTuned > r.TestUntuned)} of {runs} runs, " +
+                          $"worse in {results.Count(r => r.TestTuned < r.TestUntuned)}");
+        return results;
+    }
+
     private static (string[] Concepts, List<(double[] Input, int Class)> Samples) Load(string jsonPath)
     {
         FeatureFile featureFile = JsonSerializer.Deserialize<FeatureFile>(File.ReadAllText(jsonPath))
@@ -200,14 +254,28 @@ public static class ModelTrainer
         return (concepts, samples);
     }
 
+    private static TrainedModel Train(string[] concepts, List<(double[] Input, int Class)> samples,
+        LearningMethod method, int seed, TextWriter log, int complexity, bool binary, PerceptronSettings perceptron) =>
+        Train(concepts, samples, method, seed, log, complexity, binary, perceptron, 0).Model;
+
+    // The trained model plus the data of its run, already scaled (and turned into yes/no if enabled)
+    private record TrainingResult(TrainedModel Model, IClassifier Classifier,
+        List<(double[] Input, int Class)> Training, List<(double[] Input, int Class)> Validation,
+        List<(double[] Input, int Class)> Test);
+
     // log: where the training progress and evaluation are written (TextWriter.Null to stay quiet)
     // complexity: hidden layers (neural network), k (k-NN) or max depth (decision tree), see ComplexityName
-    private static TrainedModel Train(string[] concepts, List<(double[] Input, int Class)> samples,
-        LearningMethod method, int seed, TextWriter log, int complexity, bool binary, PerceptronSettings perceptron)
+    // validationShare: share of the training data that is held back (not trained on, not used for scaling)
+    private static TrainingResult Train(string[] concepts, List<(double[] Input, int Class)> samples,
+        LearningMethod method, int seed, TextWriter log, int complexity, bool binary, PerceptronSettings perceptron,
+        double validationShare)
     {
         // Shuffle, then split into training and test data
         Random random = new Random(seed);
         var (training, test) = Split(samples, seed, random);
+        int validationCount = (int)(training.Count * validationShare);
+        List<(double[] Input, int Class)> validation = training.Take(validationCount).ToList();
+        training = training.Skip(validationCount).ToList();
 
         // Scale every feature to 0-1, using only the training data to find min / max
         int featureCount = samples[0].Input.Length;
@@ -219,6 +287,7 @@ public static class ModelTrainer
             max[f] = training.Max(s => s.Input[f]);
         }
         training = training.Select(s => (TrainedModel.Normalize(s.Input, min, max), s.Class)).ToList();
+        validation = validation.Select(s => (TrainedModel.Normalize(s.Input, min, max), s.Class)).ToList();
         test = test.Select(s => (TrainedModel.Normalize(s.Input, min, max), s.Class)).ToList();
 
         // Yes/no features: "is this feature above its average in the training images?". The average works for
@@ -228,6 +297,7 @@ public static class ModelTrainer
         {
             thresholds = Enumerable.Range(0, featureCount).Select(f => training.Average(s => s.Input[f])).ToArray();
             training = training.Select(s => (TrainedModel.Binarize(s.Input, thresholds), s.Class)).ToList();
+            validation = validation.Select(s => (TrainedModel.Binarize(s.Input, thresholds), s.Class)).ToList();
             test = test.Select(s => (TrainedModel.Binarize(s.Input, thresholds), s.Class)).ToList();
         }
 
@@ -252,7 +322,9 @@ public static class ModelTrainer
         if (log != TextWriter.Null)
             PrintEvaluation(classifier, concepts, test, testAccuracy, log);
 
-        return new TrainedModel(classifier, method, concepts, min, max, thresholds, DateTime.Now, testAccuracy);
+        return new TrainingResult(
+            new TrainedModel(classifier, method, concepts, min, max, thresholds, DateTime.Now, testAccuracy),
+            classifier, training, validation, test);
     }
 
     // Shuffles the samples with the seed and splits them into training and test data. The same seed always
