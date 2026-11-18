@@ -71,6 +71,7 @@ are used as examples of that concept. Supported extensions are `.bmp`, `.jpg` an
 | `Vorfahrt von rechts`   | right of way  |
 | `Fahrtrichtung links`   | left turn     |
 | `Vorfahrt gewähren`     | yield         |
+| `Vorfahrtsstraße`       | priority road |
 
 The folders are listed in `conceptFolders` at the top of `Program.cs`. To add a concept, add its folder there and
 train again with `--train`.
