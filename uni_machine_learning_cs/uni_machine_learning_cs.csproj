@@ -17,8 +17,4 @@
       <None Include="Vorfahrt von rechts\**" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Vorfahrtsstraße\" />
-    </ItemGroup>
-
 </Project>

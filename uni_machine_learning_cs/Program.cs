@@ -42,7 +42,7 @@ using uni_machine_learning_cs.MachineLearning;
     ("Vorfahrt von rechts", "right of way"),
     ("Fahrtrichtung links", "left turn"),
     ("Vorfahrt gewähren", "yield"),
-    ("Vorfahrtsstraße", "priority road"),
+    //("Vorfahrtsstraße", "priority road"),
 ];
 string[] imageExtensions = [".bmp", ".jpg", ".jpeg"];
 
