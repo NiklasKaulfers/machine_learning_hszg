@@ -154,34 +154,34 @@ Unknown options starting with `--` stop the program with an error.
 cd uni_machine_learning_cs
 
 # Train the neural network and classify two images with it
-dotnet run -- --train --nn ../some/stop.bmp ../some/turn.jpg
+dotnet run --train --nn ../some/stop.bmp ../some/turn.jpg
 
 # Use the saved k-NN model (trained on the first run) and classify interactively
-dotnet run -- --knn
+dotnet run --knn
 
 # Train a decision tree on yes/no features
-dotnet run -- --train --tree --binary
+dotnet run --train --tree --binary
 
 # Perceptron with the one-vs-rest rule and the pocket algorithm
-dotnet run -- --train --perceptron --ovr --pocket
+dotnet run --train --perceptron --ovr --pocket
 
 # 100 runs of k-NN with different random splits, results go to evaluations/
-dotnet run -- --runs 100 --knn
+dotnet run --runs 100 --knn
 
 # Tune the neural network automatically in 100 runs and compare before / after
-dotnet run -- --runs 100 --nn --tune
+dotnet run --runs 100 --nn --tune
 
 # Test the saved perceptron with hand-edited weights on the same 100 splits
-dotnet run -- --runs 100 --perceptron --weights
+dotnet run --runs 100 --perceptron --weights
 
 # Sweep the number of hidden layers of the neural network, 5 runs per value
-dotnet run -- --sweep 5 --nn
+dotnet run --sweep 5 --nn
 
 # Sweep k with your own values
-dotnet run -- --sweep 10 --knn --values 1,3,5,11,21
+dotnet run --sweep 10 --knn --values 1,3,5,11,21
 
 # Sweep the number of epochs of the perceptron with yes/no features
-dotnet run -- --sweep 5 --perceptron --binary --values 1,10,100
+dotnet run --sweep 5 --perceptron --binary --values 1,10,100
 ```
 
 Classifying an image prints the detected concept and the probability of every concept:
@@ -269,7 +269,7 @@ input, stops the program with an error.
 ### Testing edited weights
 
 To see how good the edited weights are, run `--runs <n>` with `--weights` and the same method options as the
-model, for example `dotnet run -- --runs 100 --perceptron --pocket --weights`. Nothing is trained: the saved model
+model, for example `dotnet run --runs 100 --perceptron --pocket --weights`. Nothing is trained: the saved model
 is loaded, the weights file is applied, and the model is tested on the test data of the splits with seeds 1..n,
 the same splits that `--runs <n>` without `--weights` uses. That way the accuracies can be compared run by run with
 freshly trained models. The accuracy of every run and a confusion matrix summed over all runs are printed and saved
@@ -350,7 +350,7 @@ Default values tried by `--sweep` when `--values` is not given:
 - **No images are found / "Wrote 0 vectors".** Start the program from inside `uni_machine_learning_cs/`, the
   concept folders are resolved relative to the current directory. When running from Rider, set the working
   directory of the run configuration to the project folder.
-- **"Unknown option".** Check the spelling, every option starts with `--`. Remember the `--` after `dotnet run`.
+- **"Unknown option".** Check the spelling, every option starts with `--`.
 - **"--runs needs the number of runs".** The number must directly follow `--runs` or `--sweep`.
 - **"--weights needs a saved model" / "--weights only works with ...".** Train the model with `--train` first, and
   use `--weights` only with `--nn` or `--perceptron`.
