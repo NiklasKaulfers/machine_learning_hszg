@@ -34,7 +34,7 @@ public static class ModelTrainer
     private const int HiddenLayers = 1;
     private const int HiddenNeurons = 32;
     private const int Epochs = 200;
-    private const double LearningRate = 0.01;
+    private const double LearningRate = 0.000001;
 
     // k-nearest neighbors: number of neighbors that vote, odd so two concepts tie less often
     private const int Neighbors = 5;
